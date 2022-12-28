@@ -43,6 +43,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="InputOutput\Console\ConsoleInput.cs" />
+    <Compile Include="InputOutput\Console\ConsoleOutput.cs" />
+    <Compile Include="InputOutput\Files\FileInput.cs" />
+    <Compile Include="InputOutput\Files\FileOutput.cs" />
     <Compile Include="InputOutput\IInput.cs" />
     <Compile Include="InputOutput\IOutput.cs" />
     <Compile Include="Program.cs" />
