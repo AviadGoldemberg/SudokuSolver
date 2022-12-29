@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SudokuSolver.Solvers.DancingLinksSolver.DancingLinks;
 
 namespace SudokuSolver.Solvers.DancingLinksSolver
 {
@@ -12,8 +13,6 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
         public DancingLinksNode Right { get; set; }
         public DancingLinksNode Up { get; set; }
         public DancingLinksNode Down { get; set; }
-        public int Size { get; set; }
-        public int Row { get; set; }
-        public int Column { get; set; }
+        public DancingLinksColumnNode Column { get; set; }
     }
 }
