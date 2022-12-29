@@ -10,59 +10,15 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
     {
         private DancingLinksColumnNode _head;
         private List<DancingLinksNode> _solutions;
-
-        /// <summary>
-        /// Remove the current node's column from the matrix, and remove the rows
-        /// of all the nodes in the current coulmn.
-        /// </summary>
-        /// <param name="node">Current node.</param>
-        private void Cover(DancingLinksColumnNode node)
+        
+        public DancingLinks(int[,] matrix)
         {
-            // remove the current node's column from the matrix
-            node.Right.Left = node.Left;
-            node.Left.Right = node.Right;
-
-            // remove the rows from the nodes in the current column
-            DancingLinksNode rowNode = node.Down;
-            while(rowNode != node)
-            {
-                DancingLinksNode rightNode = rowNode.Right;
-                while(rightNode != rowNode)
-                {
-                    rightNode.Down.Up = rightNode.Up;
-                    rightNode.Up.Down = rightNode.Down;
-                    rightNode.Column.Size--;
-                    rightNode = rightNode.Right;
-                }
-                rowNode = rowNode.Right;
-            }
+            _solutions = new List<DancingLinksNode>();
+            initDLX(matrix);
         }
-
-        /// <summary>
-        /// Adds the rows of all the nodes in the current column back, and adds the 
-        /// current nodes column back to the matrix.
-        /// </summary>
-        /// <param name="node">Current node.</param>
-        private void Uncover(DancingLinksColumnNode node)
+        public void Solve()
         {
-            // add the rows back to the nodes in the current column
-            DancingLinksNode rowNode = node.Up;
-            while(rowNode != node)
-            {
-                DancingLinksNode leftNode = rowNode.Left;
-                while(leftNode != rowNode)
-                {
-                    leftNode.Down.Up = leftNode;
-                    leftNode.Up.Down = leftNode;
-                    leftNode.Column.Size++;
-                    leftNode = leftNode.Left;
-                }
-                rowNode = rowNode.Up;
-            }
-
-            // add the current node's column back to the matrix
-            node.Right.Left = node;
-            node.Left.Right = node;
+            Search(0);
         }
 
         /// <summary>
@@ -74,37 +30,39 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
             // if solution is found
             if (_head.Right == _head)
             {
+                Console.WriteLine("Solution found!");
                 return;
             }
             // find column with the least amount of values.
             DancingLinksColumnNode column = Choose();
             // remove column and all rows that contain a value in that column
-            Cover(column);
-
+            column.Cover();
             for (DancingLinksNode row = column.Down; row != column; row = row.Down)
             {
+                if (k < _solutions.Count)
+                    _solutions.RemoveAt(k);
                 // add row to the solution.
-                _solutions.Add(row);
+                _solutions.Insert(k, row);
 
                 // remove columns in the row and all rows that contain a value in those columns.
-                for (DancingLinksNode rowNode = row.Right; rowNode != row; rowNode = row.Right)
+                for (DancingLinksNode rowNode = row.Right; rowNode != row; rowNode = rowNode.Right)
                 {
-                    Cover(rowNode.Column);
+                    rowNode.Column.Cover();
                 }
                 // search for a solution
                 Search(k + 1);
 
                 // no solution found. remove last row added to the solution and restore columns in the row.
-                row = _solutions[_solutions.Count - 1];
+                row = _solutions[k];
                 _solutions.RemoveAt(_solutions.Count - 1);
                 column = row.Column;
                 for ( DancingLinksNode rowNode = row.Left; rowNode != row; rowNode = rowNode.Left)
                 {
-                    Uncover(rowNode.Column);
+                    rowNode.Column.Uncover();
                 }
             }
             // restore selected column and all rows that contain a value in that column.
-            Uncover(column);
+            column.Uncover();
         }
 
         /// <summary>
@@ -128,6 +86,51 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
                 }
             }
             return columnNode;
+        }
+
+        /// <summary>
+        /// Method which create Dancing Links data structure by the matrix which represent the problem.
+        /// </summary>
+        /// <param name="matrix">Matrix which represent the problem to solve.</param>
+        private void initDLX(int[,] matrix)
+        {
+            int columnsNumber = matrix.GetLength(1);
+
+            _head = new DancingLinksColumnNode("ROOT");
+            List<DancingLinksColumnNode> columnNodes = new List<DancingLinksColumnNode>();
+
+            // link all column nodes
+            for (int i = 0; i < columnsNumber; i++)
+            {
+                DancingLinksColumnNode newNode = new DancingLinksColumnNode(i.ToString());
+                columnNodes.Add(newNode);
+                _head = (DancingLinksColumnNode)_head.LinkRight(newNode);
+            }
+            // set head to the first node
+            _head = _head.Right.Column;
+
+            // searching for 1 in the matrix and create new node for it
+            for (int row = 0; row < matrix.GetLength(0); row++)
+            {
+                DancingLinksNode prevNode = null;
+                for (int col = 0; col < matrix.GetLength(1); col++)
+                {
+                    if(matrix[row, col] == 1)
+                    {
+                        DancingLinksColumnNode column = columnNodes[col];
+                        DancingLinksNode newNode = new DancingLinksNode(column);
+                        if (prevNode == null)
+                        {
+                            prevNode = newNode;
+                        }
+                        column.Up.LinkDown(newNode);
+                        prevNode = prevNode.LinkRight(newNode);
+                        column.Size++;
+                    }
+                }
+            }
+            _head.Size = columnsNumber;
+
         }
     }
 }
