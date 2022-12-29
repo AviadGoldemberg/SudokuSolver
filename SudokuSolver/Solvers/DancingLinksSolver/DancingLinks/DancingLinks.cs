@@ -16,22 +16,22 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
             _solutions = new List<DancingLinksNode>();
             initDLX(matrix);
         }
-        public void Solve()
+        public bool Solve()
         {
-            Search(0);
+            return Search(0);
         }
 
         /// <summary>
         /// Find solution to the exact cover problem.
         /// </summary>
         /// <param name="k">current depth of the search.</param>
-        private void Search(int k)
+        private bool Search(int k)
         {
             // if solution is found
             if (_head.Right == _head)
             {
-                Console.WriteLine("Solution found!");
-                return;
+                Console.WriteLine("Solution found.");
+                return true;
             }
             // find column with the least amount of values.
             DancingLinksColumnNode column = Choose();
@@ -49,8 +49,9 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
                 {
                     rowNode.Column.Cover();
                 }
-                // search for a solution
-                Search(k + 1);
+                // search for a solution. if we found one, stop searching for more.
+                if (Search(k + 1))
+                    return true;
 
                 // no solution found. remove last row added to the solution and restore columns in the row.
                 row = _solutions[k];
@@ -63,6 +64,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
             }
             // restore selected column and all rows that contain a value in that column.
             column.Uncover();
+            return false;
         }
 
         /// <summary>

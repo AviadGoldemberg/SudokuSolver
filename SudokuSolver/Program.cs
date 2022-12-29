@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using SudokuSolver.Solvers.DancingLinksSolver;
+using SudokuSolver.Solvers;
 using SudokuSolver.Board;
 
 namespace SudokuSolver
@@ -14,8 +15,16 @@ namespace SudokuSolver
         {
             string boardStr = "800000070006010053040600000000080400003000700020005038000000800004050061900002000";
             ISudokuBoard board = new ArraySudokuBoard(9, boardStr);
-            DancingLinksSolver solver = new DancingLinksSolver(board);
-            solver.Solve();
+            ISudokuSolver solver = new DancingLinksSolver(board);
+            SolvingResult solvingResult = solver.Solve();
+            if (solvingResult.IsSolved)
+            {
+                Console.WriteLine($"Solved in {solvingResult.SolvingTime}ms");
+            }
+            else
+            {
+                Console.WriteLine($"Can't solve the board! took {solvingResult.SolvingTime}ms");
+            }
         }
     }
 }
