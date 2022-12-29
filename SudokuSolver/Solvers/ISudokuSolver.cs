@@ -12,10 +12,10 @@ namespace SudokuSolver.Solvers
     /// </summary>
     internal abstract class ISudokuSolver
     {
-        protected ISudokuBoard board;
+        protected ISudokuBoard _board;
         public ISudokuSolver(ISudokuBoard board)
         {
-            this.board = board;
+            _board = board;
         }
         public abstract SolvingResult Solve();
 

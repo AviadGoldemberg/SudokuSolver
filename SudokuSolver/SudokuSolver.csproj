@@ -55,6 +55,7 @@
     <Compile Include="InputOutput\IOutput.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Solvers\DancingLinksSolver\DancingLinksSolver.cs" />
     <Compile Include="Solvers\DancingLinksSolver\DancingLinks\DancingLinks.cs" />
     <Compile Include="Solvers\DancingLinksSolver\DancingLinks\DancingLinksColumnNode.cs" />
     <Compile Include="Solvers\DancingLinksSolver\DancingLinks\DancingLinksNode.cs" />
