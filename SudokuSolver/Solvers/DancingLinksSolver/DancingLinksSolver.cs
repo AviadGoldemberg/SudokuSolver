@@ -22,7 +22,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
         {
             bool isSolved = false;
             // Get the matrix for the Dancing Links algorithm.
-            int[,] matrix = ConvertBoardToMatrix(_board);
+            byte[,] matrix = ConvertBoardToMatrix(_board);
             // Create Dancing Links solver.
             DancingLinks.DancingLinks DLX = new DancingLinks.DancingLinks(matrix);
 
@@ -53,9 +53,9 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
         /// Helper method to <see cref="ConvertBoardToMatrix(ISudokuBoard)"/>
         /// </summary>
         /// <returns>A 2D integer array representing the matrix used in the Dancing Links algorithm.</returns>
-        private int[,] CreateMatrix()
+        private byte[,] CreateMatrix()
         {
-            int[,] matrix = new int[_size * _size * _size, _size * _size * 4];
+            byte[,] matrix = new byte[_size * _size * _size, _size * _size * 4];
 
             int header = 0;
             CreateCellConstraints(matrix, ref header);
@@ -72,7 +72,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
         /// </summary>
         /// <param name="matrix">The matrix used in the Dancing Links algorithm.</param>
         /// <param name="header">The current header index in the matrix, where the constraints will be added.</param>
-        private void CreateBoxConstraints(int[,] matrix, ref int header)
+        private void CreateBoxConstraints(byte[,] matrix, ref int header)
         {
             for (int row = 1; row <= _size; row += _sectorSize)
             {
@@ -100,7 +100,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
         /// </summary>
         /// <param name="matrix">The matrix used in the Dancing Links algorithm.</param>
         /// <param name="header">The current header index in the matrix, where the constraints will be added.</param>
-        private void CreateColumnConstraints(int[,] matrix, ref int header)
+        private void CreateColumnConstraints(byte[,] matrix, ref int header)
         {
             for (int column = 1; column <= _size; column++)
             {
@@ -122,7 +122,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
         /// </summary>
         /// <param name="matrix">The matrix used in the Dancing Links algorithm.</param>
         /// <param name="header">The current header index in the matrix, where the constraints will be added.</param>
-        private void CreateRowConstraints(int[,] matrix, ref int header)
+        private void CreateRowConstraints(byte[,] matrix, ref int header)
         {
             for (int row = 1; row <= _size; row++)
             {
@@ -144,7 +144,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
         /// </summary>
         /// <param name="matrix">The matrix used in the Dancing Links algorithm.</param>
         /// <param name="header">The current header index in the matrix, where the constraints will be added.</param>
-        private void CreateCellConstraints(int[,] matrix, ref int header)
+        private void CreateCellConstraints(byte[,] matrix, ref int header)
         {
             for (int row = 1; row <= _size; row++)
             {
@@ -165,9 +165,9 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
         /// </summary>
         /// <param name="board">Sudoku board to create a matrix for it.</param>
         /// <returns>Matrix for the Dancing Links algorithm.</returns>
-        private int[,] ConvertBoardToMatrix(ISudokuBoard board)
+        private byte[,] ConvertBoardToMatrix(ISudokuBoard board)
         {
-            int[,] matrix = CreateMatrix();
+            byte[,] matrix = CreateMatrix();
 
             // Taking into account the values already entered in Sudoku's board instance
             for (int row = 1; row <= _size; row++)
