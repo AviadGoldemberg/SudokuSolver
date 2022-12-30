@@ -59,6 +59,7 @@
     <Compile Include="Solvers\DancingLinksSolver\DancingLinks\DancingLinks.cs" />
     <Compile Include="Solvers\DancingLinksSolver\DancingLinks\DancingLinksColumnNode.cs" />
     <Compile Include="Solvers\DancingLinksSolver\DancingLinks\DancingLinksNode.cs" />
+    <Compile Include="Solvers\DancingLinksSolver\DancingLinks\DancingLinksResult.cs" />
     <Compile Include="Solvers\ISudokuSolver.cs" />
     <Compile Include="Solvers\SolvingResult.cs" />
   </ItemGroup>

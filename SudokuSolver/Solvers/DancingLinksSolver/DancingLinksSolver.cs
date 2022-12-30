@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using SudokuSolver.Board;
+using SudokuSolver.Solvers.DancingLinksSolver.DancingLinks;
 
 namespace SudokuSolver.Solvers.DancingLinksSolver
 {
@@ -18,9 +19,12 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
             _sectorSize = (int)Math.Sqrt(_size);
         }
 
+        /// <summary>
+        /// Method which try to solve the current sudoku board.
+        /// </summary>
+        /// <returns>Solving result.</returns>
         public override SolvingResult Solve()
         {
-            bool isSolved = false;
             // Get the matrix for the Dancing Links algorithm.
             byte[,] matrix = ConvertBoardToMatrix(_board);
             // Create Dancing Links solver.
@@ -29,10 +33,16 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
             // Solve the board and also calculate the time.
             Stopwatch stopwatch = Stopwatch.StartNew();
             stopwatch.Start();
-            isSolved = DLX.Solve();
+            DancingLinksResult DLXResult = DLX.Solve();
             stopwatch.Stop();
 
-            return new SolvingResult(stopwatch.ElapsedMilliseconds, isSolved);
+            // Add the DLX solution to the board.
+            if (DLXResult.IsSolved)
+            {
+                AddSolutionToBoard(DLXResult.Solution);
+            }
+
+            return new SolvingResult(stopwatch.ElapsedMilliseconds, DLXResult.IsSolved);
         }
 
         /// <summary>
@@ -194,6 +204,43 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
             }
 
             return matrix;
+        }
+
+        /// <summary>
+        /// Method which add the solution from the Dancing Links algorithm to the board.
+        /// </summary>
+        /// <param name="solution">Solution that Dancing Links return.</param>
+        private void AddSolutionToBoard(List<DancingLinksNode> solution)
+        {
+            foreach (DancingLinksNode node in solution)
+            {
+                // find the dlx node in same row as 'node' with smallest column name, which represents
+                // the row and column of a cell on the Sudoku board
+                DancingLinksNode rowColNode = node;
+                int min = int.Parse(rowColNode.Column.Name);
+
+                for (DancingLinksNode tmp = node.Right; tmp != node; tmp = tmp.Right)
+                {
+                    int val = int.Parse(tmp.Column.Name);
+
+                    if (val < min)
+                    {
+                        min = val;
+                        rowColNode = tmp;
+                    }
+                }
+                // find the row and column to put the value in.
+                int ans = int.Parse(rowColNode.Column.Name);
+                int row = ans / _size;
+                int col = ans % _size;
+
+                // find the value to put in the board.
+                ans = int.Parse(rowColNode.Right.Column.Name);
+                int num = (ans % _size) + 1;
+
+                // add the value to the board
+                _board[row, col].Val = num;
+            }
         }
     }
 }

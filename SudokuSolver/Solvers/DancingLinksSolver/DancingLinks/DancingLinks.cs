@@ -21,9 +21,10 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
         /// The method check only for one solution.
         /// </summary>
         /// <returns>If the problem solved or not.</returns>
-        public bool Solve()
+        public DancingLinksResult Solve()
         {
-            return Search(0);
+            bool isSolved = Search(0);
+            return new DancingLinksResult(_solutions, isSolved);
         }
 
         /// <summary>
@@ -36,7 +37,6 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
             // if solution is found
             if (_head.Right == _head)
             {
-                Console.WriteLine("Solution found.");
                 return true;
             }
             // find column with the least amount of values.
