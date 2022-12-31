@@ -11,6 +11,8 @@ namespace SudokuSolver.Board
         Cell this[int row, int column] { get; set; }
         int GetBoardSize();
         string GetBoardString();
+        bool IsSolved();
+        string BoardOutput();
     }
 
 }
