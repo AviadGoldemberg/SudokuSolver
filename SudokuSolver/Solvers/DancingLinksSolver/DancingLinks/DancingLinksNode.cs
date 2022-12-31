@@ -7,6 +7,9 @@ using SudokuSolver.Solvers.DancingLinksSolver.DancingLinks;
 
 namespace SudokuSolver.Solvers.DancingLinksSolver
 {
+    /// <summary>
+    /// Represent Dancing Links node in Dancing Links data structre.
+    /// </summary>
     internal class DancingLinksNode
     {
         public DancingLinksNode Left { get; set; }

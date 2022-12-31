@@ -9,6 +9,9 @@ using SudokuSolver.Solvers.DancingLinksSolver.DancingLinks;
 
 namespace SudokuSolver.Solvers.DancingLinksSolver
 {
+    /// <summary>
+    /// Implementation of solving Sudoku board using Dancing Links algorithm. 
+    /// </summary>
     internal class DancingLinksSolver : ISudokuSolver
     {
         private readonly int _size;

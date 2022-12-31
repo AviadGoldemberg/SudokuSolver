@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
 {
+    /// <summary>
+    /// Implemntation of Dancing Links algorithm.
+    /// </summary>
     internal class DancingLinks
     {
         private DancingLinksColumnNode _head;
