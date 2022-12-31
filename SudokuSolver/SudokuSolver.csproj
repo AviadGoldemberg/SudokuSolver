@@ -47,12 +47,14 @@
     <Compile Include="Board\Cell.cs" />
     <Compile Include="Board\ISudokuBoard.cs" />
     <Compile Include="Exceptions\InvalidBoardString.cs" />
+    <Compile Include="Exceptions\InvalidChoice.cs" />
     <Compile Include="InputOutput\Console\ConsoleInput.cs" />
     <Compile Include="InputOutput\Console\ConsoleOutput.cs" />
     <Compile Include="InputOutput\Files\FileInput.cs" />
     <Compile Include="InputOutput\Files\FileOutput.cs" />
     <Compile Include="InputOutput\IInput.cs" />
     <Compile Include="InputOutput\IOutput.cs" />
+    <Compile Include="Menu\Menu.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Solvers\DancingLinksSolver\DancingLinksSolver.cs" />
