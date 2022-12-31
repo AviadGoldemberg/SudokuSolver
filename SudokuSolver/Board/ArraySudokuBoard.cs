@@ -94,7 +94,7 @@ namespace SudokuSolver.Board
             for (int i = 0; i < _boardSize; i++)
             {
                 // getting the current row output
-                string row = getRowOutput(i);
+                string row = GetRowOutput(i);
                 output += rowAbove + "\n" + row + "\n";
                 // in board square
                 if ((i+1) % squareSize == 0)
@@ -113,17 +113,22 @@ namespace SudokuSolver.Board
         /// <exception cref="InvalidBoardString">If the board size is invalid.</exception>
         private void InitBoardSize(int stringLength)
         {
-            double squareBoardSize = Math.Sqrt(stringLength);
+            double boardSize = Math.Sqrt(stringLength);
             // if the square is not integer, the board size is invalid.
-            if (squareBoardSize % 1 != 0)
+            if (boardSize % 1 != 0)
             {
                 throw new InvalidBoardString("Size of the board string is invalid.");
             }
-            if (squareBoardSize > _maxBoardSize)
+            // if the square of the board size is not integer, the board size is invalid.
+            if (Math.Sqrt(boardSize) % 1 != 0)
+            {
+                throw new InvalidBoardString("Size of the board string is invalid.");
+            }
+            if (boardSize > _maxBoardSize)
             {
                 throw new InvalidBoardString("Board size is not supported.");
             }
-            _boardSize = (int)squareBoardSize;
+            _boardSize = (int)boardSize;
         }
 
         /// <summary>
@@ -161,7 +166,7 @@ namespace SudokuSolver.Board
         /// </summary>
         /// <param name="row">Row to get ouptut for.</param>
         /// <returns>The row string.</returns>
-        private string getRowOutput(int row)
+        private string GetRowOutput(int row)
         {
             string rowString = "|";
             for (int col = 0; col < _boardSize; col++)
