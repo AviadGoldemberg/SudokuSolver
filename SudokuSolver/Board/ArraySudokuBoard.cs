@@ -74,9 +74,36 @@ namespace SudokuSolver.Board
             return true;
         }
 
-        public void PrintBoard()
+        /// <summary>
+        /// Method which return board string for output.
+        /// </summary>
+        /// <returns>Board to output as string.</returns>
+        public string BoardOutput()
         {
-            return;
+            string output = "";
+            string rowAbove = "";
+            int squareSize = (int)Math.Sqrt(_boardSize);
+            // getting row to put above every row
+            for (int i = 0; i <= 6 * _boardSize + squareSize + 1; i++)
+            {
+                rowAbove += '-';
+            }
+            output += rowAbove + "\n";
+
+            // getting the output
+            for (int i = 0; i < _boardSize; i++)
+            {
+                // getting the current row output
+                string row = getRowOutput(i);
+                output += rowAbove + "\n" + row + "\n";
+                // in board square
+                if ((i+1) % squareSize == 0)
+                {
+                    output += rowAbove + "\n";
+                }
+            }
+            output += rowAbove + "\n";
+            return output;
         }
 
         /// <summary>
@@ -126,6 +153,36 @@ namespace SudokuSolver.Board
                     _board[row, col] = new Cell(row, col, currentChar - '0', true);
                 }
             }
+        }
+
+        /// <summary>
+        /// Getting row output.
+        /// Helper method to <see cref="BoardOutput"/>
+        /// </summary>
+        /// <param name="row">Row to get ouptut for.</param>
+        /// <returns>The row string.</returns>
+        private string getRowOutput(int row)
+        {
+            string rowString = "|";
+            for (int col = 0; col < _boardSize; col++)
+            {
+                int val = _board[row, col].Val;
+                if (val < 10)
+                {
+                    rowString += "|  " + val.ToString() + "  ";
+                }
+                else
+                {
+                    rowString += "| " + val.ToString() + "  ";
+                }
+                // in board square
+                if ((col + 1) % Math.Sqrt(_boardSize) == 0)
+                {
+                    rowString += '|';
+                }
+            }
+            rowString += "|";
+            return rowString;
         }
     }
 

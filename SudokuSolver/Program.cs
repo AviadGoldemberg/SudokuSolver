@@ -20,14 +20,7 @@ namespace SudokuSolver
             if (solvingResult.IsSolved)
             {
                 Console.WriteLine($"Solved in {solvingResult.SolvingTime}ms");
-                for (int i = 0; i < board.GetBoardSize(); i++)
-                {
-                    for (int j = 0; j < board.GetBoardSize(); j++)
-                    {
-                        Console.Write(board[i, j].Val.ToString() + " ");
-                    }
-                    Console.WriteLine();
-                }
+                Console.WriteLine(board.BoardOutput());
             }
             else
             {

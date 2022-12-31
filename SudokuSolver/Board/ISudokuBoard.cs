@@ -12,7 +12,7 @@ namespace SudokuSolver.Board
         int GetBoardSize();
         string GetBoardString();
         bool IsSolved();
-        void PrintBoard();
+        string BoardOutput();
     }
 
 }
