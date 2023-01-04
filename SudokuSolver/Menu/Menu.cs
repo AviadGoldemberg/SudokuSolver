@@ -179,7 +179,7 @@ namespace SudokuSolver.Menu
             }
             else if (solvingResult.IsSolved && !IsSoved(board))
             {
-                _defaultOutput.Output("Solver assume that the board is solved, but is not!.");
+                _defaultOutput.Output($"Solver assume that the board is solved, but is not!\n{board.BoardOutput()}\n");
             }
             else
             {

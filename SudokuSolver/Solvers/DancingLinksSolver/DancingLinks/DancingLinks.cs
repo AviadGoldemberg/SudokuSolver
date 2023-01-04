@@ -13,10 +13,14 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
     {
         private DancingLinksColumnNode _head;
         private List<DancingLinksNode> _solutions;
+        private List<List<DancingLinksNode>> _allSolutions;
+        private int _solutionCount;
         
-        public DancingLinks(byte[,] matrix)
+        public DancingLinks(byte[,] matrix, int solutionCount)
         {
+            _solutionCount = solutionCount;
             _solutions = new List<DancingLinksNode>();
+            _allSolutions = new List<List<DancingLinksNode>>();
             initDLX(matrix);
         }
         /// <summary>
@@ -27,11 +31,12 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
         public DancingLinksResult Solve()
         {
             bool isSolved = Search(0);
-            return new DancingLinksResult(_solutions, isSolved);
+            return new DancingLinksResult(_allSolutions, isSolved);
         }
 
         /// <summary>
-        /// Recursive function that searches for one solution to the exact cover problem.
+        /// Recursive function that searches for N solutions to the exact cover problem.
+        /// N is amount of solutions that was passed in Dancing Links Constructor.
         /// </summary>
         /// <param name="k">The current depth of the search.</param>
         /// <returns>True if a solution is found, false otherwise.</returns>
@@ -40,7 +45,15 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
             // if solution is found
             if (_head.Right == _head)
             {
-                return true;
+                // add the solution to list of solutions
+                _allSolutions.Add(new List<DancingLinksNode>(_solutions));
+                // if we didn't get the amount of solutions we need, so return false in order to continue
+                // search for more solutions.
+                if (_allSolutions.Count != _solutionCount)
+                    return false;
+                // if we get the amount of solutions we need, return true to stop.
+                else
+                    return true;
             }
             // find column with the least amount of values.
             DancingLinksColumnNode column = Choose();
@@ -55,7 +68,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
                 {
                     rowNode.Column.Cover();
                 }
-                // search for a solution. if we found one, stop searching for more.
+                // search for a solution. if we found all solutions that need, stop.
                 if (Search(k + 1))
                     return true;
 
@@ -63,7 +76,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
                 row = _solutions[_solutions.Count - 1];
                 _solutions.RemoveAt(_solutions.Count - 1);
                 column = row.Column;
-                for ( DancingLinksNode rowNode = row.Left; rowNode != row; rowNode = rowNode.Left)
+                for (DancingLinksNode rowNode = row.Left; rowNode != row; rowNode = rowNode.Left)
                 {
                     rowNode.Column.Uncover();
                 }

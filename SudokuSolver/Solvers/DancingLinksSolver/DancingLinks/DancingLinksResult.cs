@@ -11,9 +11,9 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
     /// </summary>
     internal class DancingLinksResult
     {
-        public List<DancingLinksNode> Solution { get; set; }
+        public List<List<DancingLinksNode>> Solution { get; set; }
         public bool IsSolved { get; set; }
-        public DancingLinksResult (List<DancingLinksNode> solution, bool isSolved)
+        public DancingLinksResult (List<List<DancingLinksNode>> solution, bool isSolved)
         {
             Solution = solution;
             IsSolved = isSolved;

@@ -16,6 +16,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
     {
         private readonly int _size;
         private readonly int _sectorSize;
+        private const int NUMBER_OF_SOLUTIONS = 1;
         public DancingLinksSolver(ISudokuBoard board) : base(board)
         {
             _size = board.GetBoardSize();
@@ -35,7 +36,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
             // get the matrix for the Dancing Links algorithm.
             byte[,] matrix = ConvertBoardToMatrix(_board);
             // create Dancing Links solver.
-            DancingLinks.DancingLinks DLX = new DancingLinks.DancingLinks(matrix);
+            DancingLinks.DancingLinks DLX = new DancingLinks.DancingLinks(matrix, NUMBER_OF_SOLUTIONS);
 
             DancingLinksResult DLXResult = DLX.Solve();
             stopwatch.Stop();
@@ -43,7 +44,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
             // add the DLX solution to the board.
             if (DLXResult.IsSolved)
             {
-                AddSolutionToBoard(DLXResult.Solution);
+                AddSolutionToBoard(DLXResult.Solution[0]);
             }
 
             return new SolvingResult(stopwatch.ElapsedMilliseconds, DLXResult.IsSolved);
