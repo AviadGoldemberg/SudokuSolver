@@ -49,8 +49,13 @@ namespace SudokuSolver.Menu
                 switch (userChoice)
                 {
                     case (int)Choices.Solve:
-                        SolveWithUserInput();
-                        continueLoop = false;
+                        // get board string and create board object.
+                        string boardString = _defaultInput.GetString(_defaultOutput, "Enter board string: ");
+                        // check if user choose to exit.
+                        if (boardString == "exit")
+                            continueLoop = false;
+                        else
+                            SolveWithUserInput(boardString);
                         break;
                     case (int)Choices.Test:
                         Console.WriteLine("You choose to test!");
@@ -80,7 +85,7 @@ namespace SudokuSolver.Menu
                     solver = new DancingLinksSolver(board);
                     break;
                 default:
-                    _defaultOutput.Output("Got invalid algorithm code. Use Dancing Links by default...");
+                    _defaultOutput.Output("Got invalid algorithm code. Use Dancing Links by default...\n");
                     // by default the solver will be dancing links algorithm.
                     solver = new DancingLinksSolver(board);
                     break;
@@ -110,10 +115,9 @@ namespace SudokuSolver.Menu
         /// <summary>
         /// Method which solve board with user input.
         /// </summary>
-        public void SolveWithUserInput()
+        /// <param name="boardString">Board string</param>
+        public void SolveWithUserInput(string boardString)
         {
-            // get board string and create board object.
-            string boardString = _defaultInput.GetString(_defaultOutput, "Enter board string: ");
             ISudokuBoard board = new ArraySudokuBoard(boardString);
             // get sudoku solver from user.
             ISudokuSolver solver = GetSudokuSolver(board);
