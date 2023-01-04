@@ -16,15 +16,19 @@ namespace SudokuSolver.Menu
     internal class Menu
     {
         private IInput _defaultInput;
-        private IOutput _defaultOutput; 
+        private IOutput _defaultOutput;
+        private const string FILES_DIRECTORY = "BoardsFiles";
 
         private enum Choices
         {
-            Solve = 1,
-            Test = 2,
-
             ConsoleInput = 1,
             FileInput = 2,
+
+            ConsoleOutput = 1,
+            FileOutput = 2,
+
+            Solve = 1,
+            Test = 2,
 
             DancingLinksAlgorithm = 1
         }
@@ -49,13 +53,9 @@ namespace SudokuSolver.Menu
                 switch (userChoice)
                 {
                     case (int)Choices.Solve:
-                        // get board string and create board object.
-                        string boardString = _defaultInput.GetString(_defaultOutput, "Enter board string: ");
-                        // check if user choose to exit.
-                        if (boardString == "exit")
-                            continueLoop = false;
-                        else
-                            SolveWithUserInput(boardString);
+                        // get board from input and solve.
+                        IInput inputHandler = GetBoardInputHandler();
+                        SolveBoardString(inputHandler.GetString());
                         break;
                     case (int)Choices.Test:
                         Console.WriteLine("You choose to test!");
@@ -71,11 +71,59 @@ namespace SudokuSolver.Menu
         }
 
         /// <summary>
+        /// Method which get from user input handler.
+        /// </summary>
+        /// <returns>Input handler for the Sudoku board.</returns>
+        private IInput GetBoardInputHandler()
+        {
+            int choice = GetUserIntChoice("Enter 1 to console input.\nEnter 2 to file input.\nEnter your choice: ");
+            bool continueLoop = true;
+            IInput inputHandler = null;
+            while (continueLoop)
+            {
+                switch (choice)
+                {
+                    case (int)Choices.ConsoleInput:
+                        inputHandler =  new ConsoleInput();
+                        _defaultOutput.Output("Enter board string: ");
+                        continueLoop = false;
+                        break;
+                    case (int)Choices.FileInput:
+                        // get the file path
+                        string path = GetFilePath();
+                        inputHandler =  new FileInput(path);
+                        continueLoop = false;
+                        break;
+                    default:
+                        choice = GetUserIntChoice("Please enter valid input: ");
+                        break;
+
+                }
+            }
+            return inputHandler;
+        }
+
+        /// <summary>
+        /// Method which get file path from user to get a sudoku board string.
+        /// </summary>
+        /// <returns>Sudoku board file path.</returns>
+        private string GetFilePath()
+        {
+            // get the file path
+            string fileName = _defaultInput.GetString(_defaultOutput, $"Enter file path (file path should be in [{FILES_DIRECTORY}] directory): ");
+            fileName = FILES_DIRECTORY + "\\" + fileName;
+            string exeDirectory = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            string binDirectory = System.IO.Directory.GetParent(exeDirectory).FullName;
+            string rootDirectory = System.IO.Directory.GetParent(binDirectory).FullName;
+            return System.IO.Path.GetFullPath(System.IO.Path.Combine(rootDirectory, fileName));
+        }
+
+        /// <summary>
         /// Method which return sudoku solver by user choice.
         /// </summary>
         /// <param name="boardString">Board string.</param>
         /// <returns>Sudoku solver.</returns>
-        public ISudokuSolver GetSudokuSolver(ISudokuBoard board)
+        private ISudokuSolver GetSudokuSolver(ISudokuBoard board)
         {
             int choice = GetUserIntChoice("Enter 1 to solve with dancing links.\nEnter your choice: ");
             ISudokuSolver solver = null;
@@ -98,7 +146,7 @@ namespace SudokuSolver.Menu
         /// </summary>
         /// <param name="message">Which message output to the user before the input.</param>
         /// <returns></returns>
-        public int GetUserIntChoice(string message)
+        private int GetUserIntChoice(string message)
         {
             // getting user choice
             string userInput = _defaultInput.GetString(_defaultOutput, message);
@@ -113,10 +161,10 @@ namespace SudokuSolver.Menu
         }
 
         /// <summary>
-        /// Method which solve board with user input.
+        /// Method which solve board string.
         /// </summary>
         /// <param name="boardString">Board string</param>
-        public void SolveWithUserInput(string boardString)
+        private void SolveBoardString(string boardString)
         {
             ISudokuBoard board = new ArraySudokuBoard(boardString);
             // get sudoku solver from user.

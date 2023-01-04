@@ -28,18 +28,19 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
         /// <returns>Solving result.</returns>
         public override SolvingResult Solve()
         {
-            // Get the matrix for the Dancing Links algorithm.
-            byte[,] matrix = ConvertBoardToMatrix(_board);
-            // Create Dancing Links solver.
-            DancingLinks.DancingLinks DLX = new DancingLinks.DancingLinks(matrix);
-
-            // Solve the board and also calculate the time.
+            // solve the board and also calculate the time.
             Stopwatch stopwatch = Stopwatch.StartNew();
             stopwatch.Start();
+
+            // get the matrix for the Dancing Links algorithm.
+            byte[,] matrix = ConvertBoardToMatrix(_board);
+            // create Dancing Links solver.
+            DancingLinks.DancingLinks DLX = new DancingLinks.DancingLinks(matrix);
+
             DancingLinksResult DLXResult = DLX.Solve();
             stopwatch.Stop();
 
-            // Add the DLX solution to the board.
+            // add the DLX solution to the board.
             if (DLXResult.IsSolved)
             {
                 AddSolutionToBoard(DLXResult.Solution);
