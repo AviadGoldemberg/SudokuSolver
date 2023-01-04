@@ -45,7 +45,7 @@ namespace SudokuSolver.InputOutput.Files
         /// <exception cref="FileNotFoundException"></exception>
         private static void WriteToFile(string filePath, string str)
         {
-            if (!File.Exists(str))
+            if (!File.Exists(filePath))
             {
                 throw new FileNotFoundException(filePath);
             }
