@@ -7,6 +7,9 @@ using SudokuSolver.InputOutput;
 using SudokuSolver.InputOutput.Console;
 using SudokuSolver.InputOutput.Files;
 using SudokuSolver.Exceptions;
+using SudokuSolver.Solvers.DancingLinksSolver;
+using SudokuSolver.Board;
+using SudokuSolver.Solvers;
 
 namespace SudokuSolver.Menu
 {
@@ -21,7 +24,9 @@ namespace SudokuSolver.Menu
             Test = 2,
 
             ConsoleInput = 1,
-            FileInput = 2
+            FileInput = 2,
+
+            DancingLinksAlgorithm = 1
         }
 
         public Menu()
@@ -44,7 +49,7 @@ namespace SudokuSolver.Menu
                 switch (userChoice)
                 {
                     case (int)Choices.Solve:
-                        Console.WriteLine("You choose to solve!");
+                        SolveWithUserInput();
                         continueLoop = false;
                         break;
                     case (int)Choices.Test:
@@ -59,9 +64,28 @@ namespace SudokuSolver.Menu
                 }
             }
         }
-        public void SolveBoard(string boardInput, IOutput outputHandler)
+
+        /// <summary>
+        /// Method which return sudoku solver by user choice.
+        /// </summary>
+        /// <param name="boardString">Board string.</param>
+        /// <returns>Sudoku solver.</returns>
+        public ISudokuSolver GetSudokuSolver(ISudokuBoard board)
         {
-            return;
+            int choice = GetUserIntChoice("Enter 1 to solve with dancing links.\nEnter your choice: ");
+            ISudokuSolver solver = null;
+            switch (choice)
+            {
+                case (int)Choices.DancingLinksAlgorithm:
+                    solver = new DancingLinksSolver(board);
+                    break;
+                default:
+                    _defaultOutput.Output("Got invalid algorithm code. Use Dancing Links by default...");
+                    // by default the solver will be dancing links algorithm.
+                    solver = new DancingLinksSolver(board);
+                    break;
+            }
+            return solver;
         }
 
         /// <summary>
@@ -81,6 +105,30 @@ namespace SudokuSolver.Menu
             }
             return choice;
             
+        }
+
+        /// <summary>
+        /// Method which solve board with user input.
+        /// </summary>
+        public void SolveWithUserInput()
+        {
+            // get board string and create board object.
+            string boardString = _defaultInput.GetString(_defaultOutput, "Enter board string: ");
+            ISudokuBoard board = new ArraySudokuBoard(boardString);
+            // get sudoku solver from user.
+            ISudokuSolver solver = GetSudokuSolver(board);
+            _defaultOutput.Output("Solving...\n");
+            // solve the board.
+            SolvingResult solvingResult = solver.Solve();
+            // output result
+            if (solvingResult.IsSolved)
+            {
+                _defaultOutput.Output($"Solved in [{solvingResult.SolvingTime}ms]\n{board.BoardOutput()}\n");
+            }
+            else
+            {
+                _defaultOutput.Output($"Can't solve the board. time took: [{solvingResult.SolvingTime}ms]\n");
+            }
         }
     }
 }
