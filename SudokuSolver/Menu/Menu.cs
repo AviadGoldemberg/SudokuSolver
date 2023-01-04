@@ -173,14 +173,75 @@ namespace SudokuSolver.Menu
             // solve the board.
             SolvingResult solvingResult = solver.Solve();
             // output result
-            if (solvingResult.IsSolved)
+            if (solvingResult.IsSolved && IsSoved(board))
             {
                 _defaultOutput.Output($"Solved in [{solvingResult.SolvingTime}ms]\n{board.BoardOutput()}\n");
+            }
+            else if (solvingResult.IsSolved && !IsSoved(board))
+            {
+                _defaultOutput.Output("Solver assume that the board is solved, but is not!.");
             }
             else
             {
                 _defaultOutput.Output($"Can't solve the board. time took: [{solvingResult.SolvingTime}ms]\n");
             }
+        }
+        /// <summary>
+        /// Method which check if sudoku board is solved.
+        /// </summary>
+        /// <param name="board">Sudoku board.</param>
+        /// <returns>True if the board is solved, otherwise false.</returns>
+        private static bool IsSoved(ISudokuBoard board)
+        {
+            int boardSize = board.GetBoardSize();
+            // check each row
+            for (int i = 0; i < boardSize; i++)
+            {
+                bool[] seen = new bool[boardSize];
+                for (int j = 0; j < boardSize; j++)
+                {
+                    if (board[i, j].Val < 1 || board[i, j].Val > boardSize || seen[board[i, j].Val - 1])
+                        return false;
+                    seen[board[i, j].Val - 1] = true;
+                }
+            }
+
+            // check each column
+            for (int j = 0; j < boardSize; j++)
+            {
+                bool[] seen = new bool[boardSize];
+                for (int i = 0; i < boardSize; i++)
+                {
+                    if (board[i, j].Val < 1 || board[i, j].Val > boardSize || seen[board[i, j].Val - 1])
+                    {
+                        return false;
+                    }
+                    seen[board[i, j].Val - 1] = true;
+                }
+            }
+
+            // check each  subgrid
+            int subgridSize = (int)Math.Sqrt(boardSize);
+            for (int i = 0; i < boardSize; i += subgridSize)
+            {
+                for (int j = 0; j < boardSize; j += subgridSize)
+                {
+                    bool[] seen = new bool[boardSize];
+                    for (int k = 0; k < boardSize; k++)
+                    {
+                        int row = i + k / subgridSize;
+                        int col = j + k % subgridSize;
+                        if (board[row, col].Val < 1 || board[row, col].Val > boardSize || seen[board[row, col].Val - 1])
+                        {
+                            return false;
+                        }
+                        seen[board[row, col].Val - 1] = true;
+                    }
+                }
+            }
+
+            // if all checks pass, the board is solved
+            return true;
         }
     }
 }
