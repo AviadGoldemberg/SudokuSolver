@@ -69,7 +69,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="BoardsFiles\Testing\TestingBoards.txt" />
+    <Content Include="BoardsFiles\Benchmark\BenchmarkLogs.txt" />
+    <Content Include="BoardsFiles\Benchmark\BenchmarkResult.txt" />
+    <Content Include="BoardsFiles\Benchmark\boardsDataset.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

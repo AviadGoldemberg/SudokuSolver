@@ -19,17 +19,11 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
         private int _size;
         private int _sectorSize;
         private const int NUMBER_OF_SOLUTIONS = 1;
-        private const string FILES_DIRECTORY = "BoardsFiles\\Testing";
-        private const int GENERATED_BOARDS_COUNT = 20;
 
         public DancingLinksSolver(ISudokuBoard board) : base(board)
         {
             _size = board.GetBoardSize();
             _sectorSize = (int)Math.Sqrt(_size);
-        }
-        public DancingLinksSolver() : base(null)
-        {
-
         }
 
         /// <summary>
@@ -255,72 +249,6 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
                 // add the value to the board
                 _board[row, col].Val = num;
             }
-        }
-
-        /// <summary>
-        /// Method which generate boards and save them on file.
-        /// </summary>
-        public void GenerateBoards()
-        {
-            // init empty boards in all valid sizes.
-            Dictionary<string, int> boardsAndCount = new Dictionary<string, int>();
-            boardsAndCount[GetEmptyBoard(4)] = 287;
-            boardsAndCount[GetEmptyBoard(9)] = GENERATED_BOARDS_COUNT;
-            boardsAndCount[GetEmptyBoard(16)] = GENERATED_BOARDS_COUNT;
-            boardsAndCount[GetEmptyBoard(25)] = GENERATED_BOARDS_COUNT;
-            // getting the output file path
-            string path = GetFilePath();
-            IOutput outputFile = new FileOutput(path);
-            string output = "";
-
-            // generate boards
-            foreach(string boardString in boardsAndCount.Keys)
-            {
-                // init the current board.
-                _board = new ArraySudokuBoard(boardString);
-                _size = _board.GetBoardSize();
-                _sectorSize = (int)Math.Sqrt(_size);
-                // get the matrix for the Dancing Links algorithm.
-                byte[,] matrix = ConvertBoardToMatrix();
-                // create Dancing Links solver.
-                DancingLinks.DancingLinks DLX = new DancingLinks.DancingLinks(matrix, boardsAndCount[boardString]);
-                // solve the board
-                DancingLinksResult DLXResult = DLX.Solve();
-                for(int j = 0; j < DLXResult.AllSolutions.Count; j++)
-                {
-                    AddSolutionToBoard(DLXResult.AllSolutions[j]);
-                    output += _board.GetBoardString() + "\n";
-                }
-            }
-            outputFile.Output(output);
-
-        }
-
-        /// <summary>
-        /// Method which return empty board.
-        /// </summary>
-        /// <param name="size">Size of the board.</param>
-        /// <returns>Empty baord.</returns>
-        private string GetEmptyBoard(int size)
-        {
-            string board = "";
-            for (int i = 0; i < size * size; i++)
-                    board += '0';
-            return board;
-        }
-
-        /// <summary>
-        /// Merthod which get the file path of the testing file.
-        /// </summary>
-        /// <returns>Path of the testing file.</returns>
-        public static string GetFilePath()
-        {
-            // getting the path of the file
-            string path = FILES_DIRECTORY + "\\" + "TestingBoards.txt";
-            string exeDirectory = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            string binDirectory = System.IO.Directory.GetParent(exeDirectory).FullName;
-            string rootDirectory = System.IO.Directory.GetParent(binDirectory).FullName;
-            return System.IO.Path.GetFullPath(System.IO.Path.Combine(rootDirectory, path));
         }
     }
 }
