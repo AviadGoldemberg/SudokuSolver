@@ -132,8 +132,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
             _head = _head.Right.Column;
 
             // searching for 1 in the matrix and create new node for it.
-            // use parallel for to get faster result.
-            Parallel.For(0, matrix.Length, row =>
+            for(int row = 0; row < matrix.Length; row++)
             {
                 DancingLinksNode prevNode = null;
                 for (int col = 0; col < matrix[0].Length; col++)
@@ -151,9 +150,8 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
                         column.Size++;
                     }
                 }
-            });
+            }
             _head.Size = columnsNumber;
-
         }
     }
 }
