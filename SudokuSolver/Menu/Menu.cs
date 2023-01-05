@@ -120,10 +120,7 @@ namespace SudokuSolver.Menu
             // get the file path
             string fileName = _defaultInput.GetString(_defaultOutput, $"Enter file path (file path should be in [{FILES_DIRECTORY}] directory): ");
             fileName = FILES_DIRECTORY + "\\" + fileName;
-            string exeDirectory = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            string binDirectory = System.IO.Directory.GetParent(exeDirectory).FullName;
-            string rootDirectory = System.IO.Directory.GetParent(binDirectory).FullName;
-            return System.IO.Path.GetFullPath(System.IO.Path.Combine(rootDirectory, fileName));
+            return System.IO.Path.GetFullPath(System.IO.Path.Combine(GetRootDirectory(), fileName));
         }
 
         /// <summary>
@@ -194,10 +191,7 @@ namespace SudokuSolver.Menu
         private string GetBenchmarkFile()
         {
             string path = FILES_DIRECTORY + "\\" + BENCHMARK_FILE_PATH;
-            string exeDirectory = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            string binDirectory = System.IO.Directory.GetParent(exeDirectory).FullName;
-            string rootDirectory = System.IO.Directory.GetParent(binDirectory).FullName;
-            return System.IO.Path.GetFullPath(System.IO.Path.Combine(rootDirectory, path));
+            return System.IO.Path.GetFullPath(System.IO.Path.Combine(GetRootDirectory(), path));
         }
 
         /// <summary>
@@ -207,10 +201,7 @@ namespace SudokuSolver.Menu
         private string GetBenchmarkLogFile()
         {
             string path = FILES_DIRECTORY + "\\" + BENCHMARK_LOG_FILE_PATH;
-            string exeDirectory = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            string binDirectory = System.IO.Directory.GetParent(exeDirectory).FullName;
-            string rootDirectory = System.IO.Directory.GetParent(binDirectory).FullName;
-            return System.IO.Path.GetFullPath(System.IO.Path.Combine(rootDirectory, path));
+            return System.IO.Path.GetFullPath(System.IO.Path.Combine(GetRootDirectory(), path));
         }
 
         /// <summary>
@@ -220,10 +211,19 @@ namespace SudokuSolver.Menu
         private string GetBenchmarkResultFile()
         {
             string path = FILES_DIRECTORY + "\\" + BENCHMARK_RESULT_FILE_PATH;
+            return System.IO.Path.GetFullPath(System.IO.Path.Combine(GetRootDirectory(), path));
+        }
+
+        /// <summary>
+        /// Method which get the root directory.
+        /// </summary>
+        /// <returns>Root directory.</returns>
+        private string GetRootDirectory()
+        {
             string exeDirectory = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
             string binDirectory = System.IO.Directory.GetParent(exeDirectory).FullName;
             string rootDirectory = System.IO.Directory.GetParent(binDirectory).FullName;
-            return System.IO.Path.GetFullPath(System.IO.Path.Combine(rootDirectory, path));
+            return rootDirectory;
         }
 
         /// <summary>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,7 +17,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
         private List<List<DancingLinksNode>> _allSolutions;
         private int _solutionCount;
         
-        public DancingLinks(byte[,] matrix, int solutionCount)
+        public DancingLinks(BitArray[] matrix, int solutionCount)
         {
             _solutionCount = solutionCount;
             _solutions = new List<DancingLinksNode>();
@@ -113,30 +114,31 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
         /// Method which create Dancing Links data structure by the matrix which represent the problem.
         /// </summary>
         /// <param name="matrix">Matrix which represent the problem to solve.</param>
-        private void initDLX(byte[,] matrix)
+        private void initDLX(BitArray[] matrix)
         {
-            int columnsNumber = matrix.GetLength(1);
+            int columnsNumber = matrix[0].Length;
 
             _head = new DancingLinksColumnNode("ROOT");
-            List<DancingLinksColumnNode> columnNodes = new List<DancingLinksColumnNode>();
+            Dictionary<int, DancingLinksColumnNode> columnNodes = new Dictionary<int, DancingLinksColumnNode>();
 
             // link all column nodes
             for (int i = 0; i < columnsNumber; i++)
             {
                 DancingLinksColumnNode newNode = new DancingLinksColumnNode(i.ToString());
-                columnNodes.Add(newNode);
+                columnNodes[i] = newNode;
                 _head = (DancingLinksColumnNode)_head.LinkRight(newNode);
             }
             // set head to the first node
             _head = _head.Right.Column;
 
-            // searching for 1 in the matrix and create new node for it
-            for (int row = 0; row < matrix.GetLength(0); row++)
+            // searching for 1 in the matrix and create new node for it.
+            // use parallel for to get faster result.
+            Parallel.For(0, matrix.Length, row =>
             {
                 DancingLinksNode prevNode = null;
-                for (int col = 0; col < matrix.GetLength(1); col++)
+                for (int col = 0; col < matrix[0].Length; col++)
                 {
-                    if(matrix[row, col] == 1)
+                    if (matrix[row][col])
                     {
                         DancingLinksColumnNode column = columnNodes[col];
                         DancingLinksNode newNode = new DancingLinksNode(column);
@@ -149,7 +151,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
                         column.Size++;
                     }
                 }
-            }
+            });
             _head.Size = columnsNumber;
 
         }
