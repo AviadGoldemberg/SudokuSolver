@@ -218,7 +218,7 @@ namespace SudokuSolver.Menu
         /// Method which get the root directory.
         /// </summary>
         /// <returns>Root directory.</returns>
-        private string GetRootDirectory()
+        private static string GetRootDirectory()
         {
             string exeDirectory = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
             string binDirectory = System.IO.Directory.GetParent(exeDirectory).FullName;

@@ -12,9 +12,39 @@ namespace SudokuTest
     public class SudokuSolveTest
     {
         [TestMethod]
-        public void Solve_ValidBoards_true()
+        public void Solve_ValidBoards_True()
+        {;
+            // Arrange
+            string[] boardsArray = GetBoardsFromFile("BoardsFiles\\ValidUnsolvedBoards.txt");
+
+            // Act
+            foreach (string boardStr in boardsArray)
+            {
+                ISudokuBoard board = new ArraySudokuBoard(boardStr);
+                ISudokuSolver solver = new DancingLinksSolver(board);
+                SolvingResult solvingResult = solver.Solve();
+
+                // Assert
+                Assert.IsTrue(solvingResult.IsSolved && IsSolved(board));
+            }
+        }
+
+        [TestMethod]
+        public void Solve_InvalidBoards_False()
         {
-            Assert.IsTrue(true);
+            // Arrange
+            string[] boardsArray = GetBoardsFromFile("BoardsFiles\\InvalidUnsolvedBoards.txt");
+
+            // Act
+            foreach (string boardStr in boardsArray)
+            {
+                ISudokuBoard board = new ArraySudokuBoard(boardStr);
+                ISudokuSolver solver = new DancingLinksSolver(board);
+                SolvingResult solvingResult = solver.Solve();
+
+                // Assert
+                Assert.IsFalse(solvingResult.IsSolved || IsSolved(board));
+            }
         }
 
 
@@ -74,6 +104,21 @@ namespace SudokuTest
 
             // if all checks pass, the board is solved
             return true;
+        }
+
+        private static string[] GetBoardsFromFile(string file)
+        {
+            // get the file path root.
+            string rootDirectory = System.IO.Directory.GetParent(System.IO.Directory.GetCurrentDirectory()).Parent.FullName; ;
+            string path = System.IO.Path.Combine(rootDirectory, file);
+            // create input handler
+            IInput inputHandler = new FileInput(path);
+
+            // gettting boards to test and create array of board strings.
+            string boardsString = inputHandler.GetString();
+            char[] delims = new[] { '\r', '\n' };
+            string[] boardsArray = boardsString.Split(delims, StringSplitOptions.RemoveEmptyEntries);
+            return boardsArray;
         }
     }
 }
