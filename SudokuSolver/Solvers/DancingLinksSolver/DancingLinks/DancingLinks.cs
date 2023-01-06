@@ -134,32 +134,37 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
             // set head to the first node
             _head = _head.Right.Column;
 
+            // using tasks to optimize the runtime.
+            List<Task> tasks = new List<Task>();
             // searching for 1 in the matrix and create new node for it.
-            ParallelOptions options = new ParallelOptions();
-            options.MaxDegreeOfParallelism = 4;
-            var mat = Partitioner.Create(matrix, EnumerablePartitionerOptions.NoBuffering);
-            Parallel.ForEach(mat, options, array =>
+            foreach (BitArray array in matrix)
             {
-                DancingLinksNode prevNode = null;
-                for (int col = 0; col < matrix[0].Length; col++)
+                tasks.Add(Task.Factory.StartNew(() =>
                 {
-                    if (array[col])
+                    DancingLinksNode prevNode = null;
+                    for (int col = 0; col < matrix[0].Length; col++)
                     {
-                        DancingLinksColumnNode column = columnNodes[col];
-                        DancingLinksNode newNode = new DancingLinksNode(column);
-                        lock (_lock)
+                        if (array[col])
                         {
-                            if (prevNode == null)
+                            DancingLinksColumnNode column = columnNodes[col];
+                            DancingLinksNode newNode = new DancingLinksNode(column);
+                            lock (_lock)
                             {
-                                prevNode = newNode;
+                                if (prevNode == null)
+                                {
+                                    prevNode = newNode;
+                                }
+                                column.Up.LinkDown(newNode);
+                                prevNode = prevNode.LinkRight(newNode);
+                                column.Size++;
                             }
-                            column.Up.LinkDown(newNode);
-                            prevNode = prevNode.LinkRight(newNode);
-                            column.Size++;
                         }
                     }
-                }
-            });
+                }));
+            }
+            // wait for all tasks.
+            Task.WaitAll(tasks.ToArray());
+
             _head.Size = columnsNumber;
         }
     }
