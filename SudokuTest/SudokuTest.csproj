@@ -62,6 +62,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="BoardsFiles\InvalidBoardStrings.txt" />
     <Content Include="BoardsFiles\InvalidSolvedBoards.txt" />
     <Content Include="BoardsFiles\InvalidUnsolvedBoards.txt" />
     <Content Include="BoardsFiles\ValidSolvedBoards.txt" />

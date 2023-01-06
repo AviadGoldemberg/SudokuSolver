@@ -5,6 +5,7 @@ using SudokuSolver.InputOutput;
 using SudokuSolver.InputOutput.Files;
 using SudokuSolver.Solvers;
 using SudokuSolver.Solvers.DancingLinksSolver;
+using SudokuSolver.Exceptions;
 
 namespace SudokuTest
 {
@@ -81,6 +82,52 @@ namespace SudokuTest
                 // Assert
                 Assert.IsFalse(solvingResult.IsSolved || IsSolved(board));
             }
+        }
+
+        [TestMethod]
+        public void ArraySudokuBoard_InvalidStringBoards_InvalidBoardException()
+        {
+            // Arrange
+            string[] boardsArray = GetBoardsFromFile("BoardsFiles\\InvalidBoardStrings.txt");
+
+            // Act
+            foreach (string boardStr in boardsArray)
+            {
+                bool exceptionThrown = false;
+                try
+                {
+                    ISudokuBoard board = new ArraySudokuBoard(boardStr);
+
+                }
+                catch (InvalidBoardString)
+                {
+                    exceptionThrown = true;
+                }
+
+                // Assert
+                Assert.IsTrue(exceptionThrown);
+            }
+        }
+
+        [TestMethod]
+        public void Files_InvalidFile_FileNotFoundException()
+        {
+            // Arrange
+            string invalidFileName = "NotExist.txt";
+            bool exceptionThrown = false;
+
+            // Act
+            try
+            {
+                string[] boardsArray = GetBoardsFromFile(invalidFileName);
+            }
+            catch (System.IO.FileNotFoundException)
+            {
+                exceptionThrown = true;
+            }
+
+            // Assert
+            Assert.IsTrue(exceptionThrown);
         }
 
 
