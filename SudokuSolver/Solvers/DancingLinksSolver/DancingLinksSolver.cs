@@ -75,7 +75,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
         private BitArray[] CreateMatrix()
         {
             BitArray[] matrix = new BitArray[_size * _size * _size];
-            for(int i = 0; i < matrix.Length; i++)
+            for (int i = 0; i < matrix.Length; i++)
             {
                 matrix[i] = new BitArray(_size * _size * 4);
             }

@@ -4,6 +4,8 @@ using System.Collections;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
+using System.Collections.Concurrent;
 
 namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
 {
@@ -16,7 +18,8 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
         private List<DancingLinksNode> _solutions;
         private List<List<DancingLinksNode>> _allSolutions;
         private int _solutionCount;
-        
+        private object _lock = new object();
+
         public DancingLinks(BitArray[] matrix, int solutionCount)
         {
             _solutionCount = solutionCount;
@@ -101,7 +104,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
             for (DancingLinksColumnNode column = (DancingLinksColumnNode)_head.Right; column != _head; column = (DancingLinksColumnNode)column.Right)
             {
                 // need to found the column with the minimum size.
-                if(column.Size < min)
+                if (column.Size < min)
                 {
                     min = column.Size;
                     columnNode = column;
@@ -132,25 +135,31 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
             _head = _head.Right.Column;
 
             // searching for 1 in the matrix and create new node for it.
-            for(int row = 0; row < matrix.Length; row++)
+            ParallelOptions options = new ParallelOptions();
+            options.MaxDegreeOfParallelism = 4;
+            var mat = Partitioner.Create(matrix, EnumerablePartitionerOptions.NoBuffering);
+            Parallel.ForEach(mat, options, array =>
             {
                 DancingLinksNode prevNode = null;
                 for (int col = 0; col < matrix[0].Length; col++)
                 {
-                    if (matrix[row][col])
+                    if (array[col])
                     {
                         DancingLinksColumnNode column = columnNodes[col];
                         DancingLinksNode newNode = new DancingLinksNode(column);
-                        if (prevNode == null)
+                        lock (_lock)
                         {
-                            prevNode = newNode;
+                            if (prevNode == null)
+                            {
+                                prevNode = newNode;
+                            }
+                            column.Up.LinkDown(newNode);
+                            prevNode = prevNode.LinkRight(newNode);
+                            column.Size++;
                         }
-                        column.Up.LinkDown(newNode);
-                        prevNode = prevNode.LinkRight(newNode);
-                        column.Size++;
                     }
                 }
-            }
+            });
             _head.Size = columnsNumber;
         }
     }
