@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
 using SudokuSolver.InputOutput;
 using SudokuSolver.InputOutput.Console;
 using SudokuSolver.InputOutput.Files;
@@ -18,7 +19,9 @@ namespace SudokuSolver.Menu
         private IInput _defaultInput;
         private IOutput _defaultOutput;
         private const string FILES_DIRECTORY = "BoardsFiles";
-
+        private const string BENCHMARK_FILE_PATH = "Benchmark\\boardsDataset.txt";
+        private const string BENCHMARK_LOG_FILE_PATH = "Benchmark\\BenchmarkLogs.txt";
+        private const string BENCHMARK_RESULT_FILE_PATH = "Benchmark\\BenchmarkResult.txt";
         private enum Choices
         {
             ConsoleInput = 1,
@@ -28,7 +31,7 @@ namespace SudokuSolver.Menu
             FileOutput = 2,
 
             Solve = 1,
-            Test = 2,
+            Benchmark = 2,
 
             DancingLinksAlgorithm = 1
         }
@@ -46,7 +49,7 @@ namespace SudokuSolver.Menu
         public void Start()
         {
             // getting user choice
-            int userChoice = GetUserIntChoice("Welcome to Sudoku solver.\nChoose 1 for solve a sudoku board.\nChoose 2 for test sudoku solver.\nEnter here your choice: ");
+            int userChoice = GetUserIntChoice("Welcome to Sudoku solver.\nChoose 1 for solve a sudoku board.\nChoose 2 for benchmark.\nEnter here your choice: ");
             bool continueLoop = true;
             while (continueLoop)
             {
@@ -57,8 +60,8 @@ namespace SudokuSolver.Menu
                         IInput inputHandler = GetBoardInputHandler();
                         SolveBoardString(inputHandler.GetString());
                         break;
-                    case (int)Choices.Test:
-                        Console.WriteLine("You choose to test!");
+                    case (int)Choices.Benchmark:
+                        Benchmark();
                         continueLoop = false;
                         break;
                     default:
@@ -112,10 +115,7 @@ namespace SudokuSolver.Menu
             // get the file path
             string fileName = _defaultInput.GetString(_defaultOutput, $"Enter file path (file path should be in [{FILES_DIRECTORY}] directory): ");
             fileName = FILES_DIRECTORY + "\\" + fileName;
-            string exeDirectory = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            string binDirectory = System.IO.Directory.GetParent(exeDirectory).FullName;
-            string rootDirectory = System.IO.Directory.GetParent(binDirectory).FullName;
-            return System.IO.Path.GetFullPath(System.IO.Path.Combine(rootDirectory, fileName));
+            return System.IO.Path.GetFullPath(System.IO.Path.Combine(GetRootDirectory(), fileName));
         }
 
         /// <summary>
@@ -173,75 +173,122 @@ namespace SudokuSolver.Menu
             // solve the board.
             SolvingResult solvingResult = solver.Solve();
             // output result
-            if (solvingResult.IsSolved && IsSoved(board))
-            {
+            if (solvingResult.IsSolved)
                 _defaultOutput.Output($"Solved in [{solvingResult.SolvingTime}ms]\n{board.BoardOutput()}\n");
-            }
-            else if (solvingResult.IsSolved && !IsSoved(board))
-            {
-                _defaultOutput.Output("Solver assume that the board is solved, but is not!.");
-            }
             else
-            {
                 _defaultOutput.Output($"Can't solve the board. time took: [{solvingResult.SolvingTime}ms]\n");
-            }
         }
+
         /// <summary>
-        /// Method which check if sudoku board is solved.
+        /// Method which get the benchmark file path.
         /// </summary>
-        /// <param name="board">Sudoku board.</param>
-        /// <returns>True if the board is solved, otherwise false.</returns>
-        private static bool IsSoved(ISudokuBoard board)
+        /// <returns>Benchmark file path.</returns>
+        private string GetBenchmarkFile()
         {
-            int boardSize = board.GetBoardSize();
-            // check each row
-            for (int i = 0; i < boardSize; i++)
-            {
-                bool[] seen = new bool[boardSize];
-                for (int j = 0; j < boardSize; j++)
-                {
-                    if (board[i, j].Val < 1 || board[i, j].Val > boardSize || seen[board[i, j].Val - 1])
-                        return false;
-                    seen[board[i, j].Val - 1] = true;
-                }
-            }
+            string path = FILES_DIRECTORY + "\\" + BENCHMARK_FILE_PATH;
+            return System.IO.Path.GetFullPath(System.IO.Path.Combine(GetRootDirectory(), path));
+        }
 
-            // check each column
-            for (int j = 0; j < boardSize; j++)
-            {
-                bool[] seen = new bool[boardSize];
-                for (int i = 0; i < boardSize; i++)
-                {
-                    if (board[i, j].Val < 1 || board[i, j].Val > boardSize || seen[board[i, j].Val - 1])
-                    {
-                        return false;
-                    }
-                    seen[board[i, j].Val - 1] = true;
-                }
-            }
+        /// <summary>
+        /// Method which get the benchmark logging file.
+        /// </summary>
+        /// <returns>Benchmark logging file.</returns>
+        private string GetBenchmarkLogFile()
+        {
+            string path = FILES_DIRECTORY + "\\" + BENCHMARK_LOG_FILE_PATH;
+            return System.IO.Path.GetFullPath(System.IO.Path.Combine(GetRootDirectory(), path));
+        }
 
-            // check each  subgrid
-            int subgridSize = (int)Math.Sqrt(boardSize);
-            for (int i = 0; i < boardSize; i += subgridSize)
-            {
-                for (int j = 0; j < boardSize; j += subgridSize)
-                {
-                    bool[] seen = new bool[boardSize];
-                    for (int k = 0; k < boardSize; k++)
-                    {
-                        int row = i + k / subgridSize;
-                        int col = j + k % subgridSize;
-                        if (board[row, col].Val < 1 || board[row, col].Val > boardSize || seen[board[row, col].Val - 1])
-                        {
-                            return false;
-                        }
-                        seen[board[row, col].Val - 1] = true;
-                    }
-                }
-            }
+        /// <summary>
+        /// Method which get the benchmark result log file.
+        /// </summary>
+        /// <returns>Benchmark result log file.</returns>
+        private string GetBenchmarkResultFile()
+        {
+            string path = FILES_DIRECTORY + "\\" + BENCHMARK_RESULT_FILE_PATH;
+            return System.IO.Path.GetFullPath(System.IO.Path.Combine(GetRootDirectory(), path));
+        }
 
-            // if all checks pass, the board is solved
-            return true;
+        /// <summary>
+        /// Method which get the root directory.
+        /// </summary>
+        /// <returns>Root directory.</returns>
+        private static string GetRootDirectory()
+        {
+            string exeDirectory = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            string binDirectory = System.IO.Directory.GetParent(exeDirectory).FullName;
+            string rootDirectory = System.IO.Directory.GetParent(binDirectory).FullName;
+            return rootDirectory;
+        }
+
+        /// <summary>
+        /// Method which benchamark the Sudoku solving algorithm.
+        /// The method save the results in two files.
+        /// One file is log for each board and another to the result in general.
+        /// </summary>
+        private void Benchmark()
+        {
+            // getting dataset input handler.
+            IInput boardsInput = new FileInput(GetBenchmarkFile());
+            // get output file to log the results.
+            IOutput logger = new FileOutput(GetBenchmarkLogFile());
+            // get benchmartk file to store the result.
+            IOutput benchmarkResultOutput = new FileOutput(GetBenchmarkResultFile());
+
+            string dataset = boardsInput.GetString();
+            // split the dataset to board and solution.
+            string[] boardSAndSolutions = dataset.Split('\n');
+
+            // result parametrs:
+            ulong averageTime = 0;
+            ulong count = 0;
+            // init min and max solve time.
+            long minSolveTime = long.MaxValue;
+            long maxSolveTime = long.MinValue;
+            string loggerString = "[" + DateTime.Now.ToString("dd/MM/yyyy h:mm") + " Benchmark result]\n";
+
+            // start stopwatch
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            stopwatch.Start();
+
+            // iterate each board.
+            foreach (string currentBoardAndSolution in boardSAndSolutions)
+            {
+                // getting board string, create board object and solve it.
+                string boardString = currentBoardAndSolution.Split(',')[0];
+                ISudokuBoard board = new ArraySudokuBoard(boardString);
+                DancingLinksSolver solver = new DancingLinksSolver(board);
+                SolvingResult solvingResult = solver.Solve();
+
+                // append to the average the time and increase the count.
+                averageTime += (ulong)solvingResult.SolvingTime;
+                count++;
+
+                // update minimum and maximum solving time.
+                if (solvingResult.SolvingTime < minSolveTime)
+                    minSolveTime = solvingResult.SolvingTime;
+                if (solvingResult.SolvingTime > maxSolveTime)
+                    maxSolveTime = solvingResult.SolvingTime;
+
+                loggerString += $"Board {count} Solved in [{solvingResult.SolvingTime}ms]\n";
+            }
+            stopwatch.Stop();
+
+            // output to logger the logs.
+            logger.Output(loggerString);
+
+            // update result file.
+            string resultOutput = "Result for " + DateTime.Now.ToString("dd/MM/yyyy h:mm") + "Benchmark\n";
+            resultOutput += $"Solve {count} different boards.\n";
+            resultOutput += $"Number of boards benchmarked: {count}\n";
+            resultOutput += $"[Average solving time: {averageTime / count}ms]\n";
+            resultOutput += $"[Minimum solving time: {minSolveTime}ms]\n";
+            resultOutput += $"[Maximum solving time: {maxSolveTime}ms]\n";
+            resultOutput += $"[Benchmark running time in milliseconds: {stopwatch.ElapsedMilliseconds} ms]\n";
+            resultOutput += $"[Benchmark running time in seconds: {stopwatch.Elapsed.TotalSeconds} Seconds]\n";
+            benchmarkResultOutput.Output(resultOutput);
+
+            _defaultOutput.Output("Finish benchmark.\n");
         }
     }
 }

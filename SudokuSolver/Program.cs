@@ -7,6 +7,7 @@ using SudokuSolver.Solvers.DancingLinksSolver;
 using SudokuSolver.Solvers;
 using SudokuSolver.Board;
 using SudokuSolver.Menu;
+using System.Threading;
 
 namespace SudokuSolver
 {

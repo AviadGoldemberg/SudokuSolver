@@ -11,11 +11,11 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
     /// </summary>
     internal class DancingLinksResult
     {
-        public List<DancingLinksNode> Solution { get; set; }
+        public List<Stack<DancingLinksNode>> AllSolutions { get; set; }
         public bool IsSolved { get; set; }
-        public DancingLinksResult (List<DancingLinksNode> solution, bool isSolved)
+        public DancingLinksResult (List<Stack<DancingLinksNode>> solution, bool isSolved)
         {
-            Solution = solution;
+            AllSolutions = solution;
             IsSolved = isSolved;
         }
     }
