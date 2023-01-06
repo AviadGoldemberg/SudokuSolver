@@ -31,8 +31,7 @@ namespace SudokuSolver.Menu
             FileOutput = 2,
 
             Solve = 1,
-            Test = 2,
-            Benchmark = 3,
+            Benchmark = 2,
 
             DancingLinksAlgorithm = 1
         }
@@ -50,7 +49,7 @@ namespace SudokuSolver.Menu
         public void Start()
         {
             // getting user choice
-            int userChoice = GetUserIntChoice("Welcome to Sudoku solver.\nChoose 1 for solve a sudoku board.\nChoose 2 for test sudoku solver.\nChoose 3 for benchmark.\nEnter here your choice: ");
+            int userChoice = GetUserIntChoice("Welcome to Sudoku solver.\nChoose 1 for solve a sudoku board.\nChoose 2 for benchmark.\nEnter here your choice: ");
             bool continueLoop = true;
             while (continueLoop)
             {
@@ -60,10 +59,6 @@ namespace SudokuSolver.Menu
                         // get board from input and solve.
                         IInput inputHandler = GetBoardInputHandler();
                         SolveBoardString(inputHandler.GetString());
-                        break;
-                    case (int)Choices.Test:
-                        Console.WriteLine("You choose to test!");
-                        continueLoop = false;
                         break;
                     case (int)Choices.Benchmark:
                         Benchmark();

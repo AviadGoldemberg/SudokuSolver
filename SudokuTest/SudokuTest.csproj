@@ -62,7 +62,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="BoardsFiles\InvalidSolvedBoards.txt" />
     <Content Include="BoardsFiles\InvalidUnsolvedBoards.txt" />
+    <Content Include="BoardsFiles\ValidSolvedBoards.txt" />
     <Content Include="BoardsFiles\ValidUnsolvedBoards.txt" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />

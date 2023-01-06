@@ -47,6 +47,42 @@ namespace SudokuTest
             }
         }
 
+        [TestMethod]
+        public void Solve_ValidSolvedBoards_True()
+        {
+            // Arrange
+            string[] boardsArray = GetBoardsFromFile("BoardsFiles\\ValidSolvedBoards.txt");
+
+            // Act
+            foreach (string boardStr in boardsArray)
+            {
+                ISudokuBoard board = new ArraySudokuBoard(boardStr);
+                ISudokuSolver solver = new DancingLinksSolver(board);
+                SolvingResult solvingResult = solver.Solve();
+
+                // Assert
+                Assert.IsTrue(solvingResult.IsSolved && IsSolved(board));
+            }
+        }
+
+        [TestMethod]
+        public void Solve_InvalidSolvedBoards_False()
+        {
+            // Arrange
+            string[] boardsArray = GetBoardsFromFile("BoardsFiles\\InvalidSolvedBoards.txt");
+
+            // Act
+            foreach (string boardStr in boardsArray)
+            {
+                ISudokuBoard board = new ArraySudokuBoard(boardStr);
+                ISudokuSolver solver = new DancingLinksSolver(board);
+                SolvingResult solvingResult = solver.Solve();
+
+                // Assert
+                Assert.IsFalse(solvingResult.IsSolved || IsSolved(board));
+            }
+        }
+
 
         /// <summary>
         /// Method which check if sudoku board is solved.
