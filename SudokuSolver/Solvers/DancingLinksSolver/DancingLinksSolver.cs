@@ -223,7 +223,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
         /// Method which add the solution from the Dancing Links algorithm to the board.
         /// </summary>
         /// <param name="solution">Solution that Dancing Links return.</param>
-        private void AddSolutionToBoard(List<DancingLinksNode> solution)
+        private void AddSolutionToBoard(Stack<DancingLinksNode> solution)
         {
             foreach (DancingLinksNode node in solution)
             {

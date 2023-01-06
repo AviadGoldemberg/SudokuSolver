@@ -15,16 +15,16 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
     internal class DancingLinks
     {
         private DancingLinksColumnNode _head;
-        private List<DancingLinksNode> _solutions;
-        private List<List<DancingLinksNode>> _allSolutions;
+        private Stack<DancingLinksNode> _solutions;
+        private List<Stack<DancingLinksNode>> _allSolutions;
         private int _solutionCount;
         private object _lock = new object();
 
         public DancingLinks(BitArray[] matrix, int solutionCount)
         {
             _solutionCount = solutionCount;
-            _solutions = new List<DancingLinksNode>();
-            _allSolutions = new List<List<DancingLinksNode>>();
+            _solutions = new Stack<DancingLinksNode>();
+            _allSolutions = new List<Stack<DancingLinksNode>>();
             initDLX(matrix);
         }
         /// <summary>
@@ -50,7 +50,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
             if (_head.Right == _head)
             {
                 // add the solution to list of solutions
-                _allSolutions.Add(new List<DancingLinksNode>(_solutions));
+                _allSolutions.Add(new Stack<DancingLinksNode>(_solutions));
                 // if we didn't get the amount of solutions we need, so return false in order to continue
                 // search for more solutions.
                 if (_allSolutions.Count != _solutionCount)
@@ -65,7 +65,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
             column.Cover();
             for (DancingLinksNode row = column.Down; row != column; row = row.Down)
             {
-                _solutions.Add(row);
+                _solutions.Push(row);
 
                 // remove columns in the row and all rows that contain a value in those columns.
                 for (DancingLinksNode rowNode = row.Right; rowNode != row; rowNode = rowNode.Right)
@@ -77,8 +77,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
                     return true;
 
                 // no solution found. remove last row added to the solution and restore columns in the row.
-                row = _solutions[_solutions.Count - 1];
-                _solutions.RemoveAt(_solutions.Count - 1);
+                row = _solutions.Pop();
                 column = row.Column;
                 for (DancingLinksNode rowNode = row.Left; rowNode != row; rowNode = rowNode.Left)
                 {
