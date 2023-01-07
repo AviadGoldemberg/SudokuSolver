@@ -11,6 +11,7 @@ using SudokuSolver.Exceptions;
 using SudokuSolver.Solvers.DancingLinksSolver;
 using SudokuSolver.Board;
 using SudokuSolver.Solvers;
+using SudokuSolver.Solvers.BacktrackingSolver;
 
 namespace SudokuSolver.Menu
 {
@@ -33,7 +34,8 @@ namespace SudokuSolver.Menu
             Solve = 1,
             Benchmark = 2,
 
-            DancingLinksAlgorithm = 1
+            DancingLinksAlgorithm = 1, 
+            BacktrackingAlgorithm = 2
         }
 
         public Menu()
@@ -125,12 +127,15 @@ namespace SudokuSolver.Menu
         /// <returns>Sudoku solver.</returns>
         private ISudokuSolver GetSudokuSolver(ISudokuBoard board)
         {
-            int choice = GetUserIntChoice("Enter 1 to solve with dancing links.\nEnter your choice: ");
+            int choice = GetUserIntChoice("Enter 1 to solve with dancing links.\nEnter 2 to solve with Backtracking.\nEnter your choice: ");
             ISudokuSolver solver = null;
             switch (choice)
             {
                 case (int)Choices.DancingLinksAlgorithm:
                     solver = new DancingLinksSolver(board);
+                    break;
+                case (int)Choices.BacktrackingAlgorithm:
+                    solver = new BacktrackingSolver(board);
                     break;
                 default:
                     _defaultOutput.Output("Got invalid algorithm code. Use Dancing Links by default...\n");

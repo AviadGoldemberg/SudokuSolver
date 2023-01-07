@@ -57,6 +57,7 @@
     <Compile Include="Menu\Menu.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Solvers\BacktrackingSolver\BacktrackingSolver.cs" />
     <Compile Include="Solvers\DancingLinksSolver\DancingLinksSolver.cs" />
     <Compile Include="Solvers\DancingLinksSolver\DancingLinks\DancingLinks.cs" />
     <Compile Include="Solvers\DancingLinksSolver\DancingLinks\DancingLinksColumnNode.cs" />
@@ -74,5 +75,6 @@
     <Content Include="BoardsFiles\Benchmark\boardsDataset.txt" />
     <Content Include="BoardsFiles\board1.txt" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
