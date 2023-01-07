@@ -18,9 +18,8 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
         private Stack<DancingLinksNode> _solutions;
         private List<Stack<DancingLinksNode>> _allSolutions;
         private int _solutionCount;
-        private object _lock = new object();
 
-        public DancingLinks(BitArray[] matrix, int solutionCount)
+        public DancingLinks(SparseMatrix matrix, int solutionCount)
         {
             _solutionCount = solutionCount;
             _solutions = new Stack<DancingLinksNode>();
@@ -116,9 +115,9 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
         /// Method which create Dancing Links data structure by the matrix which represent the problem.
         /// </summary>
         /// <param name="matrix">Matrix which represent the problem to solve.</param>
-        private void initDLX(BitArray[] matrix)
+        private void initDLX(SparseMatrix matrix)
         {
-            int columnsNumber = matrix[0].Length;
+            int columnsNumber = matrix.Length2;
 
             _head = new DancingLinksColumnNode("ROOT");
             Dictionary<int, DancingLinksColumnNode> columnNodes = new Dictionary<int, DancingLinksColumnNode>();
@@ -133,36 +132,23 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
             // set head to the first node
             _head = _head.Right.Column;
 
-            // using tasks to optimize the runtime.
-            List<Task> tasks = new List<Task>();
-            // searching for 1 in the matrix and create new node for it.
-            foreach (BitArray array in matrix)
+            for (int row = 0; row < matrix.Length1; row++)
             {
-                tasks.Add(Task.Factory.StartNew(() =>
+                DancingLinksNode prevNode = null;
+                foreach (int col in matrix.GetSparseMatrixColumn(row))
                 {
-                    DancingLinksNode prevNode = null;
-                    for (int col = 0; col < matrix[0].Length; col++)
+
+                    DancingLinksColumnNode column = columnNodes[col];
+                    DancingLinksNode newNode = new DancingLinksNode(column);
+                    if (prevNode == null)
                     {
-                        if (array[col])
-                        {
-                            DancingLinksColumnNode column = columnNodes[col];
-                            DancingLinksNode newNode = new DancingLinksNode(column);
-                            lock (_lock)
-                            {
-                                if (prevNode == null)
-                                {
-                                    prevNode = newNode;
-                                }
-                                column.Up.LinkDown(newNode);
-                                prevNode = prevNode.LinkRight(newNode);
-                                column.Size++;
-                            }
-                        }
+                        prevNode = newNode;
                     }
-                }));
+                    column.Up.LinkDown(newNode);
+                    prevNode = prevNode.LinkRight(newNode);
+                    column.Size++;
+                }
             }
-            // wait for all tasks.
-            Task.WaitAll(tasks.ToArray());
 
             _head.Size = columnsNumber;
         }

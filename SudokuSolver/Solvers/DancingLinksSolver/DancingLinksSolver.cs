@@ -38,11 +38,25 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
             stopwatch.Start();
 
             // get the matrix for the Dancing Links algorithm.
-            BitArray[] matrix = ConvertBoardToMatrix();
-            // create Dancing Links solver.
-            DancingLinks.DancingLinks DLX = new DancingLinks.DancingLinks(matrix, NUMBER_OF_SOLUTIONS);
+            Stopwatch matrixStopWatch = Stopwatch.StartNew();
+            matrixStopWatch.Start();
+            SparseMatrix matrix = ConvertBoardToMatrix();
+            matrixStopWatch.Stop();
+            Console.WriteLine($"Matrix creation time: {matrixStopWatch.ElapsedMilliseconds}ms");
 
+            // create Dancing Links solver.
+            Stopwatch dlxInitStopwatch = Stopwatch.StartNew();
+            dlxInitStopwatch.Start();
+            DancingLinks.DancingLinks DLX = new DancingLinks.DancingLinks(matrix, NUMBER_OF_SOLUTIONS);
+            dlxInitStopwatch.Stop();
+            Console.WriteLine($"DLX init time: {dlxInitStopwatch.ElapsedMilliseconds}ms");
+
+            Stopwatch solveStopwatch = Stopwatch.StartNew();
+            solveStopwatch.Start();
             DancingLinksResult DLXResult = DLX.Solve();
+            solveStopwatch.Stop();
+            Console.WriteLine($"Solve time: {solveStopwatch.ElapsedMilliseconds}ms");
+
             stopwatch.Stop();
 
             // add the DLX solution to the board.
@@ -72,13 +86,9 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
         /// Helper method to <see cref="ConvertBoardToMatrix(ISudokuBoard)"/>
         /// </summary>
         /// <returns>BitArray which represent the matrix.</returns>
-        private BitArray[] CreateMatrix()
+        private SparseMatrix CreateMatrix()
         {
-            BitArray[] matrix = new BitArray[_size * _size * _size];
-            for (int i = 0; i < matrix.Length; i++)
-            {
-                matrix[i] = new BitArray(_size * _size * 4);
-            }
+            SparseMatrix matrix = new SparseMatrix(_size * _size * _size, _size * _size * 4);
 
             int header = 0;
             CreateCellConstraints(matrix, ref header);
@@ -95,7 +105,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
         /// </summary>
         /// <param name="matrix">The matrix used in the Dancing Links algorithm.</param>
         /// <param name="header">The current header index in the matrix, where the constraints will be added.</param>
-        private void CreateBoxConstraints(BitArray[] matrix, ref int header)
+        private void CreateBoxConstraints(SparseMatrix matrix, ref int header)
         {
             for (int row = 1; row <= _size; row += _sectorSize)
             {
@@ -108,7 +118,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
                             for (int columnDelta = 0; columnDelta < _sectorSize; columnDelta++)
                             {
                                 int index = IndexInCoverMatrix(row + rowDelta, column + columnDelta, num);
-                                matrix[index][header] = true;
+                                matrix.Add(new SparseMatrixIndex(index, header));
                             }
                         }
                     }
@@ -123,7 +133,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
         /// </summary>
         /// <param name="matrix">The matrix used in the Dancing Links algorithm.</param>
         /// <param name="header">The current header index in the matrix, where the constraints will be added.</param>
-        private void CreateColumnConstraints(BitArray[] matrix, ref int header)
+        private void CreateColumnConstraints(SparseMatrix matrix, ref int header)
         {
             for (int column = 1; column <= _size; column++)
             {
@@ -132,7 +142,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
                     for (int row = 1; row <= _size; row++)
                     {
                         int index = IndexInCoverMatrix(row, column, num);
-                        matrix[index][header] = true;
+                        matrix.Add(new SparseMatrixIndex(index, header));
                     }
                 }
             }
@@ -145,7 +155,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
         /// </summary>
         /// <param name="matrix">The matrix used in the Dancing Links algorithm.</param>
         /// <param name="header">The current header index in the matrix, where the constraints will be added.</param>
-        private void CreateRowConstraints(BitArray[] matrix, ref int header)
+        private void CreateRowConstraints(SparseMatrix matrix, ref int header)
         {
             for (int row = 1; row <= _size; row++)
             {
@@ -154,7 +164,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
                     for (int column = 1; column <= _size; column++)
                     {
                         int index = IndexInCoverMatrix(row, column, num);
-                        matrix[index][header] = true;
+                        matrix.Add(new SparseMatrixIndex(index, header));
                     }
                 }
             }
@@ -167,7 +177,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
         /// </summary>
         /// <param name="matrix">The matrix used in the Dancing Links algorithm.</param>
         /// <param name="header">The current header index in the matrix, where the constraints will be added.</param>
-        private void CreateCellConstraints(BitArray[] matrix, ref int header)
+        private void CreateCellConstraints(SparseMatrix matrix, ref int header)
         {
             for (int row = 1; row <= _size; row++)
             {
@@ -176,7 +186,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
                     for (int num = 1; num <= _size; num++)
                     {
                         int index = IndexInCoverMatrix(row, column, num);
-                        matrix[index][header] = true;
+                        matrix.Add(new SparseMatrixIndex(index, header));
                     }
                 }
             }
@@ -188,9 +198,9 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
         /// </summary>
         /// <param name="board">Sudoku board to create a matrix for it.</param>
         /// <returns>Matrix for the Dancing Links algorithm.</returns>
-        private BitArray[] ConvertBoardToMatrix()
+        private SparseMatrix ConvertBoardToMatrix()
         {
-            BitArray[] matrix = CreateMatrix();
+            SparseMatrix matrix = CreateMatrix();
 
             // Taking into account the values already entered in Sudoku's board instance
             for (int row = 1; row <= _size; row++)
@@ -206,10 +216,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
                             if (num != currentNumber)
                             {
                                 int fillRow = IndexInCoverMatrix(row, column, num);
-                                for (int fillCol = 0; fillCol < matrix[0].Length; fillCol++)
-                                {
-                                    matrix[fillRow][fillCol] = false;
-                                }
+                                matrix.Remove(fillRow);
                             }
                         }
                     }
