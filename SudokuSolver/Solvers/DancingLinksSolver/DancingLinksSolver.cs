@@ -37,25 +37,12 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
             Stopwatch stopwatch = Stopwatch.StartNew();
             stopwatch.Start();
 
-            // get the matrix for the Dancing Links algorithm.
-            Stopwatch matrixStopWatch = Stopwatch.StartNew();
-            matrixStopWatch.Start();
+            // get the SparseMatrix for the Dancing Links algorithm.
             SparseMatrix matrix = ConvertBoardToMatrix();
-            matrixStopWatch.Stop();
-            Console.WriteLine($"Matrix creation time: {matrixStopWatch.ElapsedMilliseconds}ms");
-
             // create Dancing Links solver.
-            Stopwatch dlxInitStopwatch = Stopwatch.StartNew();
-            dlxInitStopwatch.Start();
             DancingLinks.DancingLinks DLX = new DancingLinks.DancingLinks(matrix, NUMBER_OF_SOLUTIONS);
-            dlxInitStopwatch.Stop();
-            Console.WriteLine($"DLX init time: {dlxInitStopwatch.ElapsedMilliseconds}ms");
-
-            Stopwatch solveStopwatch = Stopwatch.StartNew();
-            solveStopwatch.Start();
+            // solve the exact cover problem which the matrix represent.
             DancingLinksResult DLXResult = DLX.Solve();
-            solveStopwatch.Stop();
-            Console.WriteLine($"Solve time: {solveStopwatch.ElapsedMilliseconds}ms");
 
             stopwatch.Stop();
 
@@ -81,11 +68,11 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
         }
 
         /// <summary>
-        /// Initializes and creates a matrix used in the Dancing Links algorithm for solving Sudoku puzzles.
+        /// Initializes and creates a SparseMatrix used in the Dancing Links algorithm for solving Sudoku puzzles.
         /// The matrix includes constraints for each cell, row, column, and box in the Sudoku board.
         /// Helper method to <see cref="ConvertBoardToMatrix(ISudokuBoard)"/>
         /// </summary>
-        /// <returns>BitArray which represent the matrix.</returns>
+        /// <returns>SparseMatrix which represent exact cover problem.</returns>
         private SparseMatrix CreateMatrix()
         {
             SparseMatrix matrix = new SparseMatrix(_size * _size * _size, _size * _size * 4);
@@ -222,7 +209,6 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
                     }
                 }
             }
-
             return matrix;
         }
 

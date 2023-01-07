@@ -19,6 +19,11 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
         private List<Stack<DancingLinksNode>> _allSolutions;
         private int _solutionCount;
 
+        /// <summary>
+        /// Constructor to Dancing Links algorithm.
+        /// </summary>
+        /// <param name="matrix">Sparse matrix which represent exact cover problem.</param>
+        /// <param name="solutionCount">Number of solution to get.</param>
         public DancingLinks(SparseMatrix matrix, int solutionCount)
         {
             _solutionCount = solutionCount;
@@ -26,9 +31,9 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
             _allSolutions = new List<Stack<DancingLinksNode>>();
             initDLX(matrix);
         }
+
         /// <summary>
         /// Method which solve the exact cover problem using Dancing Links algorithm.
-        /// The method check only for one solution.
         /// </summary>
         /// <returns>If the problem solved or not.</returns>
         public DancingLinksResult Solve()
@@ -112,9 +117,9 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
         }
 
         /// <summary>
-        /// Method which create Dancing Links data structure by the matrix which represent the problem.
+        /// Method which create Dancing Links data structure by the SparseMatrix which represent the problem.
         /// </summary>
-        /// <param name="matrix">Matrix which represent the problem to solve.</param>
+        /// <param name="matrix">SparseMatrix which represent the problem to solve.</param>
         private void initDLX(SparseMatrix matrix)
         {
             int columnsNumber = matrix.Length2;
@@ -132,6 +137,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
             // set head to the first node
             _head = _head.Right.Column;
 
+            // get every index in the sparse matrix and connect the nodes.
             for (int row = 0; row < matrix.Length1; row++)
             {
                 DancingLinksNode prevNode = null;
@@ -149,7 +155,6 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
                     column.Size++;
                 }
             }
-
             _head.Size = columnsNumber;
         }
     }
