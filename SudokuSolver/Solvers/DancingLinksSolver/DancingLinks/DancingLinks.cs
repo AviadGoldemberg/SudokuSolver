@@ -17,7 +17,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
         private DancingLinksColumnNode _head;
         private Stack<DancingLinksNode> _solutions;
         private List<Stack<DancingLinksNode>> _allSolutions;
-        private int _solutionCount;
+        private readonly int _solutionCount;
 
         /// <summary>
         /// Constructor to Dancing Links algorithm.
@@ -38,7 +38,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
         /// <returns>If the problem solved or not.</returns>
         public DancingLinksResult Solve()
         {
-            bool isSolved = Search(0);
+            bool isSolved = Search();
             return new DancingLinksResult(_allSolutions, isSolved);
         }
 
@@ -46,9 +46,8 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
         /// Recursive function that searches for N solutions to the exact cover problem.
         /// N is amount of solutions that was passed in Dancing Links Constructor.
         /// </summary>
-        /// <param name="k">The current depth of the search.</param>
         /// <returns>True if a solution is found, false otherwise.</returns>
-        private bool Search(int k)
+        private bool Search()
         {
             // if solution is found
             if (_head.Right == _head)
@@ -77,7 +76,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
                     rowNode.Column.Cover();
                 }
                 // search for a solution. if we found all solutions that need, stop.
-                if (Search(k + 1))
+                if (Search())
                     return true;
 
                 // no solution found. remove last row added to the solution and restore columns in the row.

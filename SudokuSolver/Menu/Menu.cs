@@ -27,6 +27,7 @@ namespace SudokuSolver.Menu
         private const string BENCHMARK_FILE_PATH = "Benchmark\\boardsDataset.txt";
         private const string BENCHMARK_LOG_FILE_PATH = "Benchmark\\BenchmarkLogs.txt";
         private const string BENCHMARK_RESULT_FILE_PATH = "Benchmark\\BenchmarkResult.txt";
+        private const int MAX_EMPRT_FOR_BACKTRACKING = 20;
 
         /// <summary>
         /// Enum which represent user choices.
@@ -41,6 +42,7 @@ namespace SudokuSolver.Menu
 
             Solve = 1,
             Benchmark = 2,
+            OptimizedAlgorithm = 3,
 
             DancingLinksAlgorithm = 1, 
             BacktrackingAlgorithm = 2
@@ -94,6 +96,7 @@ namespace SudokuSolver.Menu
   \___/| .__/ \__|_|_| |_| |_|_/___\___|\__,_|  |____/ \__,_|\__,_|\___/|_|\_\\__,_|  |____/ \___/|_| \_/ \___|_|   
        |_|     ";
             _defaultOutput.OutputLine(WelcomeMessage + "\n\n");
+            _defaultOutput.OutputLine("To get the best results, please use Release mode instead of Debug mode.\n");
         }
 
         /// <summary>
@@ -169,20 +172,29 @@ namespace SudokuSolver.Menu
         /// <returns>Sudoku solver.</returns>
         private ISudokuSolver GetSudokuSolver(ISudokuBoard board)
         {
-            int choice = GetUserIntChoice($"Enter {(int)Choices.DancingLinksAlgorithm} to solve with dancing links.\nEnter {(int)Choices.BacktrackingAlgorithm} to solve with Backtracking.\nEnter your choice: ");
+            int choice = GetUserIntChoice($"Enter {(int)Choices.DancingLinksAlgorithm} to solve with dancing links.\nEnter {(int)Choices.BacktrackingAlgorithm} to solve with Backtracking.\nEnter {(int)Choices.OptimizedAlgorithm} to solve with optimized algorithm.\nEnter your choice: ");
             ISudokuSolver solver = null;
             switch (choice)
             {
                 case (int)Choices.DancingLinksAlgorithm:
                     solver = new DancingLinksSolver(board);
+                    _defaultOutput.OutputLine("Solving with Dancing Links...");
                     break;
                 case (int)Choices.BacktrackingAlgorithm:
                     solver = new BacktrackingSolver(board);
+                    _defaultOutput.OutputLine("Solving with Backtracking...");
+                    break;
+                case (int)Choices.OptimizedAlgorithm:
+                    solver = GetOptimizedAlgorithm(board);
+                    if (solver is DancingLinksSolver)
+                        _defaultOutput.OutputLine("Solving with Dancing Links...");
+                    else if (solver is BacktrackingSolver)
+                        _defaultOutput.OutputLine("Solving with Backtracking...");
                     break;
                 default:
-                    _defaultOutput.Output("Got invalid algorithm code. Use Dancing Links by default...\n");
+                    _defaultOutput.Output("Got invalid algorithm code. Use optimized algorithm by default...\n");
                     // by default the solver will be dancing links algorithm.
-                    solver = new DancingLinksSolver(board);
+                    solver = GetOptimizedAlgorithm(board);
                     break;
             }
             return solver;
@@ -216,14 +228,13 @@ namespace SudokuSolver.Menu
             ISudokuBoard board = new ArraySudokuBoard(boardString);
             // get sudoku solver from user.
             ISudokuSolver solver = GetSudokuSolver(board);
-            _defaultOutput.Output("Solving...\n");
             // solve the board.
             SolvingResult solvingResult = solver.Solve();
             // output result
             if (solvingResult.IsSolved)
                 _defaultOutput.Output($"Solved in [{solvingResult.SolvingTime}ms]\n{board.BoardOutput()}\n");
             else
-                _defaultOutput.Output($"Can't solve the board. time took: [{solvingResult.SolvingTime}ms]\n");
+                throw new InvalidBoardString($"The board is unsolvable. Time took: [{solvingResult.SolvingTime}ms]");
         }
 
         /// <summary>
@@ -337,6 +348,25 @@ namespace SudokuSolver.Menu
             benchmarkResultOutput.Output(resultOutput);
 
             _defaultOutput.Output("Finish benchmark.\n");
+        }
+
+        /// <summary>
+        /// Method which return the optimized algorithm for the current board.
+        /// </summary>
+        /// <param name="board"></param>
+        private static ISudokuSolver GetOptimizedAlgorithm(ISudokuBoard board)
+        {
+            int emptyCellsCount = 0;
+            // count the number of empty cells.
+            for (int row = 0; row < board.GetBoardSize(); row++)
+                for (int col = 0; col < board.GetBoardSize(); col++)
+                    if (board[row, col].Val == 0)
+                        emptyCellsCount++;
+            // if backtracking is probably the most efficient algorithm return it.
+            if (emptyCellsCount < MAX_EMPRT_FOR_BACKTRACKING)
+                return new BacktrackingSolver(board);
+            // else Dancing Links is probably the most efficient algorithm.
+            return new DancingLinksSolver(board);
         }
     }
 }
