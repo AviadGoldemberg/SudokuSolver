@@ -12,9 +12,13 @@ using SudokuSolver.Solvers.DancingLinksSolver;
 using SudokuSolver.Board;
 using SudokuSolver.Solvers;
 using SudokuSolver.Solvers.BacktrackingSolver;
+using System.IO;
 
 namespace SudokuSolver.Menu
 {
+    /// <summary>
+    /// Menu class.
+    /// </summary>
     internal class Menu
     {
         private IInput _defaultInput;
@@ -23,6 +27,10 @@ namespace SudokuSolver.Menu
         private const string BENCHMARK_FILE_PATH = "Benchmark\\boardsDataset.txt";
         private const string BENCHMARK_LOG_FILE_PATH = "Benchmark\\BenchmarkLogs.txt";
         private const string BENCHMARK_RESULT_FILE_PATH = "Benchmark\\BenchmarkResult.txt";
+
+        /// <summary>
+        /// Enum which represent user choices.
+        /// </summary>
         private enum Choices
         {
             ConsoleInput = 1,
@@ -51,27 +59,62 @@ namespace SudokuSolver.Menu
         public void Start()
         {
             // getting user choice
-            int userChoice = GetUserIntChoice("Welcome to Sudoku solver.\nChoose 1 for solve a sudoku board.\nChoose 2 for benchmark.\nEnter here your choice: ");
+            int userChoice = 0;
             bool continueLoop = true;
+            OutputWelcomeMessage();
             while (continueLoop)
             {
-                switch (userChoice)
+                // getting choice from input.
+                userChoice = GetUserIntChoice($"Choose {(int)Choices.Solve} for solve a sudoku board.\nChoose {(int)Choices.Benchmark} for benchmark.\nEnter here your choice: ");
+                try
                 {
-                    case (int)Choices.Solve:
-                        // get board from input and solve.
-                        IInput inputHandler = GetBoardInputHandler();
-                        SolveBoardString(inputHandler.GetString());
-                        break;
-                    case (int)Choices.Benchmark:
-                        Benchmark();
-                        continueLoop = false;
-                        break;
-                    default:
-                        // if the choice is not valid, force the user enter valid choice.
-                        Console.WriteLine("Please enter a valid number.");
-                        userChoice = GetUserIntChoice("Enter your choice: ");
-                        break;
+                    RunUserOption(userChoice);
                 }
+                catch (InvalidBoardString e)
+                {
+                    _defaultOutput.OutputLine(e.Message);
+                }
+                catch (InvalidChoice e)
+                {
+                    _defaultOutput.OutputLine(e.Message);
+                }
+                catch (FileNotFoundException e)
+                {
+                    _defaultOutput.OutputLine(e.Message + " is not valid file path.");
+                }
+            }
+        }
+
+        private void OutputWelcomeMessage()
+        {
+            string WelcomeMessage = @"   ___        _   _           _             _    ____            _       _             ____        _                
+  / _ \ _ __ | |_(_)_ __ ___ (_)_______  __| |  / ___| _   _  __| | ___ | | ___   _   / ___|  ___ | |_   _____ _ __ 
+ | | | | '_ \| __| | '_ ` _ \| |_  / _ \/ _` |  \___ \| | | |/ _` |/ _ \| |/ / | | |  \___ \ / _ \| \ \ / / _ \ '__|
+ | |_| | |_) | |_| | | | | | | |/ /  __/ (_| |   ___) | |_| | (_| | (_) |   <| |_| |   ___) | (_) | |\ V /  __/ |   
+  \___/| .__/ \__|_|_| |_| |_|_/___\___|\__,_|  |____/ \__,_|\__,_|\___/|_|\_\\__,_|  |____/ \___/|_| \_/ \___|_|   
+       |_|     ";
+            _defaultOutput.OutputLine(WelcomeMessage + "\n\n");
+        }
+
+        /// <summary>
+        /// Method which run user choice.
+        /// Helper function to <see cref="Start"/>
+        /// </summary>
+        /// <param name="userChoice">User choice.</param>
+        private void RunUserOption(int userChoice)
+        {
+            switch (userChoice)
+            {
+                case (int)Choices.Solve:
+                    // get board from input and solve.
+                    IInput inputHandler = GetBoardInputHandler();
+                    SolveBoardString(inputHandler.GetString());
+                    break;
+                case (int)Choices.Benchmark:
+                    Benchmark();
+                    break;
+                default:
+                    throw new InvalidChoice("Got invalid choice.");
             }
         }
 
@@ -81,7 +124,7 @@ namespace SudokuSolver.Menu
         /// <returns>Input handler for the Sudoku board.</returns>
         private IInput GetBoardInputHandler()
         {
-            int choice = GetUserIntChoice("Enter 1 to console input.\nEnter 2 to file input.\nEnter your choice: ");
+            int choice = GetUserIntChoice($"Enter {(int)Choices.ConsoleInput} to console input.\nEnter {(int)Choices.FileInput} to file input.\nEnter your choice: ");
             bool continueLoop = true;
             IInput inputHandler = null;
             while (continueLoop)
@@ -100,8 +143,7 @@ namespace SudokuSolver.Menu
                         continueLoop = false;
                         break;
                     default:
-                        choice = GetUserIntChoice("Please enter valid input: ");
-                        break;
+                        throw new InvalidChoice("Got invalid choice.");
 
                 }
             }
@@ -109,7 +151,7 @@ namespace SudokuSolver.Menu
         }
 
         /// <summary>
-        /// Method which get file path from user to get a sudoku board string.
+        /// Method which get file path from user to get a sudoku board string file.
         /// </summary>
         /// <returns>Sudoku board file path.</returns>
         private string GetFilePath()
@@ -127,7 +169,7 @@ namespace SudokuSolver.Menu
         /// <returns>Sudoku solver.</returns>
         private ISudokuSolver GetSudokuSolver(ISudokuBoard board)
         {
-            int choice = GetUserIntChoice("Enter 1 to solve with dancing links.\nEnter 2 to solve with Backtracking.\nEnter your choice: ");
+            int choice = GetUserIntChoice($"Enter {(int)Choices.DancingLinksAlgorithm} to solve with dancing links.\nEnter {(int)Choices.BacktrackingAlgorithm} to solve with Backtracking.\nEnter your choice: ");
             ISudokuSolver solver = null;
             switch (choice)
             {
@@ -259,7 +301,7 @@ namespace SudokuSolver.Menu
             // iterate each board.
             foreach (string currentBoardAndSolution in boardSAndSolutions)
             {
-                // getting board string, create board object and solve it.
+                // getting board string, create board object and solve it with Dancing Links algorithm.
                 string boardString = currentBoardAndSolution.Split(',')[0];
                 ISudokuBoard board = new ArraySudokuBoard(boardString);
                 DancingLinksSolver solver = new DancingLinksSolver(board);
@@ -277,6 +319,7 @@ namespace SudokuSolver.Menu
 
                 loggerString += $"Board {count} Solved in [{solvingResult.SolvingTime}ms]\n";
             }
+
             stopwatch.Stop();
 
             // output to logger the logs.

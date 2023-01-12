@@ -17,6 +17,7 @@ namespace SudokuSolver
         {
             Menu.Menu menu = new Menu.Menu();
             menu.Start();
+            //200070038000006070300040600008020700100000006007030400004080009060400000910060002
         }
     }
 }

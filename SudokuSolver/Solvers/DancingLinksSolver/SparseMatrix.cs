@@ -29,13 +29,13 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
     internal class SparseMatrix
     {
         // dictionary to store the values. key is row, value is sorted set of columns.
-        private Dictionary<int, SortedSet<int>> sparseMatrix;
+        private Dictionary<int, List<int>> sparseMatrix;
         public int Length1 { get; set; }
         internal int Length2 { get; set; }
         
         public SparseMatrix(int length1, int length2)
         {
-            sparseMatrix = new Dictionary<int, SortedSet<int>>();
+            sparseMatrix = new Dictionary<int, List<int>>();
             Length1 = length1;
             Length2 = length2;
         }
@@ -52,7 +52,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
             }
             else
             {
-                sparseMatrix[index.Row] = new SortedSet<int>();
+                sparseMatrix[index.Row] = new List<int>();
                 sparseMatrix[index.Row].Add(index.Column);
             }
         }
@@ -72,11 +72,11 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
         /// </summary>
         /// <param name="row">Row to get.</param>
         /// <returns></returns>
-        public SortedSet<int> GetSparseMatrixColumn(int row)
+        public List<int> GetSparseMatrixColumn(int row)
         {
             if (sparseMatrix.ContainsKey(row))
                 return sparseMatrix[row];
-            return new SortedSet<int>();
+            return new List<int>();
         }
     }
 }

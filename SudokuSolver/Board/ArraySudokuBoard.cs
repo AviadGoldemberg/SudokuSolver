@@ -155,7 +155,8 @@ namespace SudokuSolver.Board
                     {
                         throw new InvalidBoardString("Board string contains invalid characters.");
                     }
-                    _board[row, col] = new Cell(row, col, currentChar - '0', true);
+                    bool isConst = currentChar != '0';
+                    _board[row, col] = new Cell(row, col, currentChar - '0', isConst);
                 }
             }
         }
@@ -190,5 +191,4 @@ namespace SudokuSolver.Board
             return rowString;
         }
     }
-
 }
