@@ -27,7 +27,9 @@ namespace SudokuSolver.Menu
         private const string BENCHMARK_FILE_PATH = "Benchmark\\boardsDataset.txt";
         private const string BENCHMARK_LOG_FILE_PATH = "Benchmark\\BenchmarkLogs.txt";
         private const string BENCHMARK_RESULT_FILE_PATH = "Benchmark\\BenchmarkResult.txt";
-        private const int MAX_EMPRT_FOR_BACKTRACKING = 20;
+        private const int MAX_EMPTY_CELLS_FOR_BACKTRACKING = 15;
+        private OutputBoardFormat _outputBoardFormat = OutputBoardFormat.BoardString;
+        
 
         /// <summary>
         /// Enum which represent user choices.
@@ -48,11 +50,40 @@ namespace SudokuSolver.Menu
             BacktrackingAlgorithm = 2
         }
 
+        /// <summary>
+        /// Represent the output format to the board.
+        /// </summary>
+        private enum OutputBoardFormat
+        {
+            VisualBoard = 1,
+            BoardString = 2
+        }
+
         public Menu()
         {
             // init default input and output handlers. 
             _defaultInput = new ConsoleInput();
             _defaultOutput = new ConsoleOutput();
+        }
+
+        /// <summary>
+        /// Method which init the board output format by the user choice.
+        /// </summary>
+        private void InitOutputFormat()
+        {
+            int userChoice = GetUserIntChoice($"Enter {(int)OutputBoardFormat.VisualBoard} to get board in visual mode.\nEnter {(int)OutputBoardFormat.BoardString} to get board as string.\nEnter here your choice: ");
+            switch (userChoice)
+            {
+                case (int)OutputBoardFormat.VisualBoard:
+                    _outputBoardFormat = OutputBoardFormat.VisualBoard;
+                    break;
+                case (int)OutputBoardFormat.BoardString:
+                    _outputBoardFormat = OutputBoardFormat.BoardString;
+                    break;
+                default:
+                    _defaultOutput.OutputLine("Got invalid format. Use the defult format which is board string.");
+                    break;
+            }
         }
 
         /// <summary>
@@ -64,6 +95,7 @@ namespace SudokuSolver.Menu
             int userChoice = 0;
             bool continueLoop = true;
             OutputWelcomeMessage();
+            InitOutputFormat();
             while (continueLoop)
             {
                 // getting choice from input.
@@ -226,13 +258,21 @@ namespace SudokuSolver.Menu
         private void SolveBoardString(string boardString)
         {
             ISudokuBoard board = new ArraySudokuBoard(boardString);
-            // get sudoku solver from user.
+
+            // get solver from user and try to solve the board.
             ISudokuSolver solver = GetSudokuSolver(board);
-            // solve the board.
             SolvingResult solvingResult = solver.Solve();
+            
+            // get the board in the selected format
+            string boardInSelectedFormat = "";
+            if (_outputBoardFormat == OutputBoardFormat.VisualBoard)
+                boardInSelectedFormat = board.BoardOutput();
+            else
+                boardInSelectedFormat = board.GetBoardString();
+
             // output result
             if (solvingResult.IsSolved)
-                _defaultOutput.Output($"Solved in [{solvingResult.SolvingTime}ms]\n{board.BoardOutput()}\n");
+                _defaultOutput.Output($"Solved in [{solvingResult.SolvingTime}ms]\n{boardInSelectedFormat}\n");
             else
                 throw new InvalidBoardString($"The board is unsolvable. Time took: [{solvingResult.SolvingTime}ms]");
         }
@@ -369,7 +409,7 @@ namespace SudokuSolver.Menu
                     if (board[row, col].Val == 0)
                         emptyCellsCount++;
             // if backtracking is probably the most efficient algorithm return it.
-            if (emptyCellsCount < MAX_EMPRT_FOR_BACKTRACKING)
+            if (emptyCellsCount < MAX_EMPTY_CELLS_FOR_BACKTRACKING)
                 return new BacktrackingSolver(board);
             // else Dancing Links is probably the most efficient algorithm.
             return new DancingLinksSolver(board);
