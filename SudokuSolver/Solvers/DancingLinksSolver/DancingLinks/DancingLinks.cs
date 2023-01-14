@@ -11,6 +11,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
 {
     /// <summary>
     /// Implemntation of Dancing Links algorithm.
+    /// The algorithm support find number of solution to the problem.
     /// </summary>
     internal class DancingLinks
     {
@@ -29,6 +30,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
             _solutionCount = solutionCount;
             _solutions = new Stack<DancingLinksNode>();
             _allSolutions = new List<Stack<DancingLinksNode>>();
+            // Create the Dancing Links matrix.
             initDLX(matrix);
         }
 
@@ -54,23 +56,22 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
             {
                 // add the solution to list of solutions
                 _allSolutions.Add(new Stack<DancingLinksNode>(_solutions));
-                // if we didn't get the amount of solutions we need, so return false in order to continue
-                // search for more solutions.
+                // if we didn't get the amount of solutions we need, return false to search for more solutions.
                 if (_allSolutions.Count != _solutionCount)
                     return false;
                 // if we get the amount of solutions we need, return true to stop.
                 else
                     return true;
             }
-            // find column with the least amount of values.
+            // find best next column.
             DancingLinksColumnNode column = Choose();
-            // remove column and all rows that contain a value in that column
+            // cover the selected column.
             column.Cover();
             for (DancingLinksNode row = column.Down; row != column; row = row.Down)
             {
                 _solutions.Push(row);
 
-                // remove columns in the row and all rows that contain a value in those columns.
+                // cover nodes in row.
                 for (DancingLinksNode rowNode = row.Right; rowNode != row; rowNode = rowNode.Right)
                 {
                     rowNode.Column.Cover();
@@ -82,18 +83,20 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
                 // no solution found. remove last row added to the solution and restore columns in the row.
                 row = _solutions.Pop();
                 column = row.Column;
+                
+                // uncover to nodes that were covered.
                 for (DancingLinksNode rowNode = row.Left; rowNode != row; rowNode = rowNode.Left)
                 {
                     rowNode.Column.Uncover();
                 }
             }
-            // restore selected column and all rows that contain a value in that column.
+            // uncover the column that was selected.
             column.Uncover();
             return false;
         }
 
         /// <summary>
-        /// Choose the column with the minimum size.
+        /// Choose the column with the minimum size, or that have size 1.
         /// </summary>
         /// <returns>Column with the minimum size.</returns>
         private DancingLinksColumnNode Choose()
@@ -105,6 +108,12 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
             // iterate all columns from the right of the head node.
             for (DancingLinksColumnNode column = (DancingLinksColumnNode)_head.Right; column != _head; column = (DancingLinksColumnNode)column.Right)
             {
+                // after benchmark, I found that if the column size is one or zero,
+                // in every case that I check the search method run faster.
+                // if I found column with size 1, I can to return and avoid the loops that not necessary.
+                if (column.Size <= 1)
+                    return column;
+
                 // need to found the column with the minimum size.
                 if (column.Size < min)
                 {
@@ -137,7 +146,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
             _head = _head.Right.Column;
 
             // get every index in the sparse matrix and connect the nodes.
-            for (int row = 0; row < matrix.Length1; row++)
+            foreach (int row in matrix.GetSparseMatrixRows())
             {
                 DancingLinksNode prevNode = null;
                 foreach (int col in matrix.GetSparseMatrixColumn(row))

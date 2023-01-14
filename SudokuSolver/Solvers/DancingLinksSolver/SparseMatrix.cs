@@ -78,5 +78,14 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
                 return sparseMatrix[row];
             return new List<int>();
         }
+
+        /// <summary>
+        /// Method which return the rows in the matrix.
+        /// </summary>
+        /// <returns>List of rows in the matrix.</returns>
+        public List<int> GetSparseMatrixRows()
+        {
+            return new List<int>(sparseMatrix.Keys);
+        }
     }
 }

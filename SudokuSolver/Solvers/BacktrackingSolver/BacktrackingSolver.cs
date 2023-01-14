@@ -11,7 +11,6 @@ namespace SudokuSolver.Solvers.BacktrackingSolver
     internal class BacktrackingSolver : ISudokuSolver
     {
         private readonly int _size;
-        private readonly int _sectorSize;
 
         /// <summary>
         /// Represents Position in sudoku board.
@@ -30,7 +29,6 @@ namespace SudokuSolver.Solvers.BacktrackingSolver
         public BacktrackingSolver(ISudokuBoard board) : base(board)
         {
             _size = board.GetBoardSize();
-            _sectorSize = (int)Math.Sqrt(_size);
         }
 
         /// <summary>
@@ -66,12 +64,12 @@ namespace SudokuSolver.Solvers.BacktrackingSolver
             int col = emptyCellPos.Column;
 
             // iterate each possible number
-            for (int i = 1; i <= _size; i++)
+            for (int number = 1; number <= _size; number++)
             {
                 // if can insert the number update the board and continue recursion.
-                if (isValid(i, emptyCellPos))
+                if (_board.IsValid(number, row, col))
                 {
-                    _board[row, col].Val = i;
+                    _board[row, col].Val = number;
                     if (SolveBoard())
                         return true;
                     
@@ -81,35 +79,6 @@ namespace SudokuSolver.Solvers.BacktrackingSolver
             }
 
             return false;
-        }
-
-        /// <summary>
-        /// Method which check if number is valid in some position at the sudoku board.
-        /// </summary>
-        /// <param name="num">Number to check.</param>
-        /// <param name="pos">Position of the number to check.</param>
-        /// <returns></returns>
-        private bool isValid(int num, Position pos)
-        {
-            // check row and col.
-            for (int index = 0; index < _size; index++)
-            {
-                if (_board[pos.Row, index].Val == num) { return false; }
-                if (_board[index, pos.Column].Val == num) { return false; }
-            }
-
-            // check box.
-            int rowBoxStart = _sectorSize * (pos.Row / _sectorSize);
-            int colBoxStart = _sectorSize * (pos.Column / _sectorSize);
-            int rowBoxEnd = rowBoxStart + _sectorSize;
-            int colBoxEnd = colBoxStart + _sectorSize;
-            for (int row = rowBoxStart; row < rowBoxEnd; row++)
-                for (int col = colBoxStart; col < colBoxEnd; col++)
-                    if (_board[row, col].Val == num)
-                        return false;
-            
-            // if there is no number in the row, column and box, num is valid.
-            return true;
         }
 
         /// <summary>

@@ -18,13 +18,13 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
     internal class DancingLinksSolver : ISudokuSolver
     {
         private int _size;
-        private int _sectorSize;
+        private int _subgridSize;
         private const int NUMBER_OF_SOLUTIONS = 1;
 
         public DancingLinksSolver(ISudokuBoard board) : base(board)
         {
             _size = board.GetBoardSize();
-            _sectorSize = (int)Math.Sqrt(_size);
+            _subgridSize = (int)Math.Sqrt(_size);
         }
 
         /// <summary>
@@ -33,7 +33,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
         /// <returns>Solving result.</returns>
         public override SolvingResult Solve()
         {
-            // solve the board and also calculate the time.
+            // start timer.
             Stopwatch stopwatch = Stopwatch.StartNew();
             stopwatch.Start();
 
@@ -44,13 +44,12 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
             // solve the exact cover problem which the matrix represent.
             DancingLinksResult DLXResult = DLX.Solve();
 
+            // stop timer
             stopwatch.Stop();
 
             // add the DLX solution to the board.
             if (DLXResult.IsSolved)
-            {
                 AddSolutionToBoard(DLXResult.AllSolutions[0]);
-            }
 
             return new SolvingResult(stopwatch.ElapsedMilliseconds, DLXResult.IsSolved);
         }
@@ -94,15 +93,15 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
         /// <param name="header">The current header index in the matrix, where the constraints will be added.</param>
         private void CreateBoxConstraints(SparseMatrix matrix, ref int header)
         {
-            for (int row = 1; row <= _size; row += _sectorSize)
+            for (int row = 1; row <= _size; row += _subgridSize)
             {
-                for (int column = 1; column <= _size; column += _sectorSize)
+                for (int column = 1; column <= _size; column += _subgridSize)
                 {
                     for (int num = 1; num <= _size; num++, header++)
                     {
-                        for (int rowDelta = 0; rowDelta < _sectorSize; rowDelta++)
+                        for (int rowDelta = 0; rowDelta < _subgridSize; rowDelta++)
                         {
-                            for (int columnDelta = 0; columnDelta < _sectorSize; columnDelta++)
+                            for (int columnDelta = 0; columnDelta < _subgridSize; columnDelta++)
                             {
                                 int index = IndexInCoverMatrix(row + rowDelta, column + columnDelta, num);
                                 matrix.Add(new SparseMatrixIndex(index, header));
@@ -194,22 +193,37 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
             {
                 for (int column = 1; column <= _size; column++)
                 {
-                    int currentNumber = _board[row - 1, column - 1].Val;
-
-                    if (currentNumber != 0)
-                    {
-                        for (int num = 1; num <= _size; num++)
-                        {
-                            if (num != currentNumber)
-                            {
-                                int fillRow = IndexInCoverMatrix(row, column, num);
-                                matrix.Remove(fillRow);
-                            }
-                        }
-                    }
+                    RemoveUnnecessaryRowsFromMatrix(matrix, row, column);
                 }
             }
             return matrix;
+        }
+
+        /// <summary>
+        /// Method which remove unnecessary row from the sparse matrix in order to reduce search time in the Dancing Links algorithm.
+        /// </summary>
+        /// <param name="matrix">Sparse matrix to remove from it the rows.</param>
+        /// <param name="row">Current row in the Sudoku board.</param>
+        /// <param name="column">Current Column in the Sudoku board.</param>
+        private void RemoveUnnecessaryRowsFromMatrix(SparseMatrix matrix, int row, int column)
+        {
+            // getting the number in the row and col
+            int currentNumber = _board[row - 1, column - 1].Val;
+
+            // if the number is const, I need to remove every other number from the matrix which represent the same row and col.
+            if (currentNumber != 0)
+            {
+                for (int num = 1; num <= _size; num++)
+                    if (num != currentNumber)
+                        matrix.Remove(IndexInCoverMatrix(row, column, num));
+            }
+            // if the number is valid, to get more efficient search method, I remove every number which is not valid in the board.
+            else
+            {
+                for (int num = 1; num <= _size; num++)
+                    if (!_board[row - 1, column - 1].PossibleValues.Contains(num))
+                        matrix.Remove(IndexInCoverMatrix(row, column, num));
+            }
         }
 
         /// <summary>
@@ -220,7 +234,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
         {
             foreach (DancingLinksNode node in solution)
             {
-                // find the dlx node in same row as 'node' with smallest column name, which represents
+                // find the DLX node in same row as 'node' with smallest column name, which represents
                 // the row and column of a cell on the Sudoku board
                 DancingLinksNode rowColNode = node;
                 int min = int.Parse(rowColNode.Column.Name);
