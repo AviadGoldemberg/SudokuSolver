@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using SudokuSolver.Solvers.DancingLinksSolver.DancingLinks;
@@ -26,6 +27,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
             Column = column;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public DancingLinksNode LinkDown(DancingLinksNode node)
         {
             node.Down = Down;
@@ -35,6 +37,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
             return node;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public DancingLinksNode LinkRight(DancingLinksNode node)
         {
             node.Right = Right;
@@ -44,24 +47,28 @@ namespace SudokuSolver.Solvers.DancingLinksSolver
             return node;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void RemoveLeftRight()
         {
             Left.Right = Right;
             Right.Left = Left;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ReinsertLeftRight()
         {
             Left.Right = this;
             Right.Left = this;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void RemoveTopBottom()
         {
             Up.Down = Down;
             Down.Up = Up;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ReinsertTopBottom()
         {
             Up.Down = this;

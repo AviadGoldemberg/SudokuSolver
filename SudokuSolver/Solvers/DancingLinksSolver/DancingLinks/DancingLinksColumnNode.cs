@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -25,6 +26,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
         /// This is done by covering the column by removing its header node from the doubly-linked list structure and then iterating through
         /// the nodes in the column and removing them from their respective row lists.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Cover()
         {
             RemoveLeftRight();
@@ -45,6 +47,7 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
         /// This is done by reinserting the header node for the column back into the doubly-linked list structure and then iterating
         /// through the nodes in the column and reinserting them into their respective row lists.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Uncover()
         {
             for (DancingLinksNode i = Up; i != this; i = i.Up)

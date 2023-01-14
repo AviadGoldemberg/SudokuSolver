@@ -69,8 +69,62 @@ namespace SudokuSolver.Board
             return _boardSize;
         }
 
+        /// <summary>
+        /// Method which check if the current board is solved or not.
+        /// </summary>
+        /// <returns>True if board solved, else false.</returns>
         public bool IsSolved()
         {
+            // check each row
+            for (int i = 0; i < _boardSize; i++)
+            {
+                bool[] seen = new bool[_boardSize];
+                for (int j = 0; j < _boardSize; j++)
+                {
+                    // if value in row is less then one or larger then the board size or was already in row
+                    if (_board[i, j].Val < 1 || _board[i, j].Val > _boardSize || seen[_board[i, j].Val - 1])
+                        return false;
+                    seen[_board[i, j].Val - 1] = true;
+                }
+            }
+
+            // check each column
+            for (int j = 0; j < _boardSize; j++)
+            {
+                bool[] seen = new bool[_boardSize];
+                for (int i = 0; i < _boardSize; i++)
+                {
+                    // if value in column is less then one or larger then the board size or was already in column
+                    if (_board[i, j].Val < 1 || _board[i, j].Val > _boardSize || seen[_board[i, j].Val - 1])
+                    {
+                        return false;
+                    }
+                    seen[_board[i, j].Val - 1] = true;
+                }
+            }
+
+            // check each box
+            int subgridSize = (int)Math.Sqrt(_boardSize);
+            for (int i = 0; i < _boardSize; i += subgridSize)
+            {
+                for (int j = 0; j < _boardSize; j += subgridSize)
+                {
+                    bool[] seen = new bool[_boardSize];
+                    for (int k = 0; k < _boardSize; k++)
+                    {
+                        int row = i + k / subgridSize;
+                        int col = j + k % subgridSize;
+                        // if value in box is less then one or larger then the board size or was already in box
+                        if (_board[row, col].Val < 1 || _board[row, col].Val > _boardSize || seen[_board[row, col].Val - 1])
+                        {
+                            return false;
+                        }
+                        seen[_board[row, col].Val - 1] = true;
+                    }
+                }
+            }
+
+            // if all checks pass, the board is solved
             return true;
         }
 
@@ -155,9 +209,11 @@ namespace SudokuSolver.Board
                     {
                         throw new InvalidBoardString("Board string contains invalid characters.");
                     }
-                    _board[row, col] = new Cell(row, col, currentChar - '0', true);
+                    bool isConst = currentChar != '0';
+                    _board[row, col] = new Cell(row, col, currentChar - '0', isConst);
                 }
             }
+            InitPossibleValues();
         }
 
         /// <summary>
@@ -189,6 +245,50 @@ namespace SudokuSolver.Board
             rowString += "|";
             return rowString;
         }
-    }
 
+        /// <summary>
+        /// Method which init possible values for each cell.
+        /// </summary>
+        private void InitPossibleValues()
+        {
+            // Init possible values for each cell in the board.
+            for (int row = 0; row < _boardSize; row++)
+                for (int col = 0; col < _boardSize; col++)
+                    if (!_board[row, col].IsConst)
+                        for (int num = 1; num <= _boardSize; num++)
+                            if (IsValid(num, row, col))
+                                _board[row, col].PossibleValues.Add(num);
+        }
+
+        /// <summary>
+        /// Method which check if number is valid in row and col.
+        /// </summary>
+        /// <param name="num">Number to check.</param>
+        /// <param name="checkRow">Row to check.</param>
+        /// <param name="checkCol">Column to check.</param>
+        /// <returns></returns>
+        public bool IsValid(int num, int checkRow, int checkCol)
+        {
+            // check row and col.
+            for (int index = 0; index < _boardSize; index++)
+            {
+                if (_board[checkRow, index].Val == num) { return false; }
+                if (_board[index, checkCol].Val == num) { return false; }
+            }
+
+            // check box.
+            int _subgridSize = (int)Math.Sqrt(_boardSize);
+            int rowBoxStart = _subgridSize * (checkRow / _subgridSize);
+            int colBoxStart = _subgridSize * (checkCol / _subgridSize);
+            int rowBoxEnd = rowBoxStart + _subgridSize;
+            int colBoxEnd = colBoxStart + _subgridSize;
+            for (int row = rowBoxStart; row < rowBoxEnd; row++)
+                for (int col = colBoxStart; col < colBoxEnd; col++)
+                    if (_board[row, col].Val == num)
+                        return false;
+
+            // if there is no number in the row, column and box, num is valid.
+            return true;
+        }
+    }
 }
