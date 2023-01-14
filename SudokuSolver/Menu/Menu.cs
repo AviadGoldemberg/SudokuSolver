@@ -12,9 +12,13 @@ using SudokuSolver.Solvers.DancingLinksSolver;
 using SudokuSolver.Board;
 using SudokuSolver.Solvers;
 using SudokuSolver.Solvers.BacktrackingSolver;
+using System.IO;
 
 namespace SudokuSolver.Menu
 {
+    /// <summary>
+    /// Menu class.
+    /// </summary>
     internal class Menu
     {
         private IInput _defaultInput;
@@ -23,6 +27,13 @@ namespace SudokuSolver.Menu
         private const string BENCHMARK_FILE_PATH = "Benchmark\\boardsDataset.txt";
         private const string BENCHMARK_LOG_FILE_PATH = "Benchmark\\BenchmarkLogs.txt";
         private const string BENCHMARK_RESULT_FILE_PATH = "Benchmark\\BenchmarkResult.txt";
+        private const int MAX_EMPTY_CELLS_FOR_BACKTRACKING = 15;
+        private OutputBoardFormat _outputBoardFormat = OutputBoardFormat.BoardString;
+        
+
+        /// <summary>
+        /// Enum which represent user choices.
+        /// </summary>
         private enum Choices
         {
             ConsoleInput = 1,
@@ -33,9 +44,19 @@ namespace SudokuSolver.Menu
 
             Solve = 1,
             Benchmark = 2,
+            OptimizedAlgorithm = 3,
 
             DancingLinksAlgorithm = 1, 
             BacktrackingAlgorithm = 2
+        }
+
+        /// <summary>
+        /// Represent the output format to the board.
+        /// </summary>
+        private enum OutputBoardFormat
+        {
+            VisualBoard = 1,
+            BoardString = 2
         }
 
         public Menu()
@@ -46,32 +67,89 @@ namespace SudokuSolver.Menu
         }
 
         /// <summary>
+        /// Method which init the board output format by the user choice.
+        /// </summary>
+        private void InitOutputFormat()
+        {
+            int userChoice = GetUserIntChoice($"Enter {(int)OutputBoardFormat.VisualBoard} to get board in visual mode.\nEnter {(int)OutputBoardFormat.BoardString} to get board as string.\nEnter here your choice: ");
+            switch (userChoice)
+            {
+                case (int)OutputBoardFormat.VisualBoard:
+                    _outputBoardFormat = OutputBoardFormat.VisualBoard;
+                    break;
+                case (int)OutputBoardFormat.BoardString:
+                    _outputBoardFormat = OutputBoardFormat.BoardString;
+                    break;
+                default:
+                    _defaultOutput.OutputLine("Got invalid format. Use the defult format which is board string.");
+                    break;
+            }
+        }
+
+        /// <summary>
         /// Method which start the menu.
         /// </summary>
         public void Start()
         {
             // getting user choice
-            int userChoice = GetUserIntChoice("Welcome to Sudoku solver.\nChoose 1 for solve a sudoku board.\nChoose 2 for benchmark.\nEnter here your choice: ");
+            int userChoice = 0;
             bool continueLoop = true;
+            OutputWelcomeMessage();
+            InitOutputFormat();
             while (continueLoop)
             {
-                switch (userChoice)
+                // getting choice from input.
+                userChoice = GetUserIntChoice($"Choose {(int)Choices.Solve} for solve a sudoku board.\nChoose {(int)Choices.Benchmark} for benchmark.\nEnter here your choice: ");
+                try
                 {
-                    case (int)Choices.Solve:
-                        // get board from input and solve.
-                        IInput inputHandler = GetBoardInputHandler();
-                        SolveBoardString(inputHandler.GetString());
-                        break;
-                    case (int)Choices.Benchmark:
-                        Benchmark();
-                        continueLoop = false;
-                        break;
-                    default:
-                        // if the choice is not valid, force the user enter valid choice.
-                        Console.WriteLine("Please enter a valid number.");
-                        userChoice = GetUserIntChoice("Enter your choice: ");
-                        break;
+                    RunUserOption(userChoice);
                 }
+                catch (InvalidBoardString e)
+                {
+                    _defaultOutput.OutputLine(e.Message);
+                }
+                catch (InvalidChoice e)
+                {
+                    _defaultOutput.OutputLine(e.Message);
+                }
+                catch (FileNotFoundException e)
+                {
+                    _defaultOutput.OutputLine(e.Message + " is not valid file path.");
+                }
+            }
+        }
+
+        private void OutputWelcomeMessage()
+        {
+            string WelcomeMessage = @"   ___        _   _           _             _    ____            _       _             ____        _                
+  / _ \ _ __ | |_(_)_ __ ___ (_)_______  __| |  / ___| _   _  __| | ___ | | ___   _   / ___|  ___ | |_   _____ _ __ 
+ | | | | '_ \| __| | '_ ` _ \| |_  / _ \/ _` |  \___ \| | | |/ _` |/ _ \| |/ / | | |  \___ \ / _ \| \ \ / / _ \ '__|
+ | |_| | |_) | |_| | | | | | | |/ /  __/ (_| |   ___) | |_| | (_| | (_) |   <| |_| |   ___) | (_) | |\ V /  __/ |   
+  \___/| .__/ \__|_|_| |_| |_|_/___\___|\__,_|  |____/ \__,_|\__,_|\___/|_|\_\\__,_|  |____/ \___/|_| \_/ \___|_|   
+       |_|     ";
+            _defaultOutput.OutputLine(WelcomeMessage + "\n\n");
+            _defaultOutput.OutputLine("To get the best results, please use Release mode instead of Debug mode.\n");
+        }
+
+        /// <summary>
+        /// Method which run user choice.
+        /// Helper function to <see cref="Start"/>
+        /// </summary>
+        /// <param name="userChoice">User choice.</param>
+        private void RunUserOption(int userChoice)
+        {
+            switch (userChoice)
+            {
+                case (int)Choices.Solve:
+                    // get board from input and solve.
+                    IInput inputHandler = GetBoardInputHandler();
+                    SolveBoardString(inputHandler.GetString());
+                    break;
+                case (int)Choices.Benchmark:
+                    Benchmark();
+                    break;
+                default:
+                    throw new InvalidChoice("Got invalid choice.");
             }
         }
 
@@ -81,7 +159,7 @@ namespace SudokuSolver.Menu
         /// <returns>Input handler for the Sudoku board.</returns>
         private IInput GetBoardInputHandler()
         {
-            int choice = GetUserIntChoice("Enter 1 to console input.\nEnter 2 to file input.\nEnter your choice: ");
+            int choice = GetUserIntChoice($"Enter {(int)Choices.ConsoleInput} to console input.\nEnter {(int)Choices.FileInput} to file input.\nEnter your choice: ");
             bool continueLoop = true;
             IInput inputHandler = null;
             while (continueLoop)
@@ -100,8 +178,7 @@ namespace SudokuSolver.Menu
                         continueLoop = false;
                         break;
                     default:
-                        choice = GetUserIntChoice("Please enter valid input: ");
-                        break;
+                        throw new InvalidChoice("Got invalid choice.");
 
                 }
             }
@@ -109,7 +186,7 @@ namespace SudokuSolver.Menu
         }
 
         /// <summary>
-        /// Method which get file path from user to get a sudoku board string.
+        /// Method which get file path from user to get a sudoku board string file.
         /// </summary>
         /// <returns>Sudoku board file path.</returns>
         private string GetFilePath()
@@ -127,20 +204,29 @@ namespace SudokuSolver.Menu
         /// <returns>Sudoku solver.</returns>
         private ISudokuSolver GetSudokuSolver(ISudokuBoard board)
         {
-            int choice = GetUserIntChoice("Enter 1 to solve with dancing links.\nEnter 2 to solve with Backtracking.\nEnter your choice: ");
+            int choice = GetUserIntChoice($"Enter {(int)Choices.DancingLinksAlgorithm} to solve with dancing links.\nEnter {(int)Choices.BacktrackingAlgorithm} to solve with Backtracking.\nEnter {(int)Choices.OptimizedAlgorithm} to solve with optimized algorithm.\nEnter your choice: ");
             ISudokuSolver solver = null;
             switch (choice)
             {
                 case (int)Choices.DancingLinksAlgorithm:
                     solver = new DancingLinksSolver(board);
+                    _defaultOutput.OutputLine("Solving with Dancing Links...");
                     break;
                 case (int)Choices.BacktrackingAlgorithm:
                     solver = new BacktrackingSolver(board);
+                    _defaultOutput.OutputLine("Solving with Backtracking...");
+                    break;
+                case (int)Choices.OptimizedAlgorithm:
+                    solver = GetOptimizedAlgorithm(board);
+                    if (solver is DancingLinksSolver)
+                        _defaultOutput.OutputLine("Solving with Dancing Links...");
+                    else if (solver is BacktrackingSolver)
+                        _defaultOutput.OutputLine("Solving with Backtracking...");
                     break;
                 default:
-                    _defaultOutput.Output("Got invalid algorithm code. Use Dancing Links by default...\n");
+                    _defaultOutput.Output("Got invalid algorithm code. Use optimized algorithm by default...\n");
                     // by default the solver will be dancing links algorithm.
-                    solver = new DancingLinksSolver(board);
+                    solver = GetOptimizedAlgorithm(board);
                     break;
             }
             return solver;
@@ -172,16 +258,23 @@ namespace SudokuSolver.Menu
         private void SolveBoardString(string boardString)
         {
             ISudokuBoard board = new ArraySudokuBoard(boardString);
-            // get sudoku solver from user.
+
+            // get solver from user and try to solve the board.
             ISudokuSolver solver = GetSudokuSolver(board);
-            _defaultOutput.Output("Solving...\n");
-            // solve the board.
             SolvingResult solvingResult = solver.Solve();
+            
+            // get the board in the selected format
+            string boardInSelectedFormat = "";
+            if (_outputBoardFormat == OutputBoardFormat.VisualBoard)
+                boardInSelectedFormat = board.BoardOutput();
+            else
+                boardInSelectedFormat = board.GetBoardString();
+
             // output result
             if (solvingResult.IsSolved)
-                _defaultOutput.Output($"Solved in [{solvingResult.SolvingTime}ms]\n{board.BoardOutput()}\n");
+                _defaultOutput.Output($"Solved in [{solvingResult.SolvingTime}ms]\n{boardInSelectedFormat}\n");
             else
-                _defaultOutput.Output($"Can't solve the board. time took: [{solvingResult.SolvingTime}ms]\n");
+                throw new InvalidBoardString($"The board is unsolvable. Time took: [{solvingResult.SolvingTime}ms]");
         }
 
         /// <summary>
@@ -247,6 +340,7 @@ namespace SudokuSolver.Menu
             // result parametrs:
             ulong averageTime = 0;
             ulong count = 0;
+            int unsolvedBoards = 0;
             // init min and max solve time.
             long minSolveTime = long.MaxValue;
             long maxSolveTime = long.MinValue;
@@ -259,7 +353,7 @@ namespace SudokuSolver.Menu
             // iterate each board.
             foreach (string currentBoardAndSolution in boardSAndSolutions)
             {
-                // getting board string, create board object and solve it.
+                // getting board string, create board object and solve it with Dancing Links algorithm.
                 string boardString = currentBoardAndSolution.Split(',')[0];
                 ISudokuBoard board = new ArraySudokuBoard(boardString);
                 DancingLinksSolver solver = new DancingLinksSolver(board);
@@ -269,6 +363,10 @@ namespace SudokuSolver.Menu
                 averageTime += (ulong)solvingResult.SolvingTime;
                 count++;
 
+                // if there is unsolved board which is should not happend, update counter.
+                if (!solvingResult.IsSolved)
+                    unsolvedBoards++;
+
                 // update minimum and maximum solving time.
                 if (solvingResult.SolvingTime < minSolveTime)
                     minSolveTime = solvingResult.SolvingTime;
@@ -277,6 +375,7 @@ namespace SudokuSolver.Menu
 
                 loggerString += $"Board {count} Solved in [{solvingResult.SolvingTime}ms]\n";
             }
+
             stopwatch.Stop();
 
             // output to logger the logs.
@@ -289,11 +388,31 @@ namespace SudokuSolver.Menu
             resultOutput += $"[Average solving time: {averageTime / count}ms]\n";
             resultOutput += $"[Minimum solving time: {minSolveTime}ms]\n";
             resultOutput += $"[Maximum solving time: {maxSolveTime}ms]\n";
+            resultOutput += $"[Unsolved boards: {unsolvedBoards}ms]\n";
             resultOutput += $"[Benchmark running time in milliseconds: {stopwatch.ElapsedMilliseconds} ms]\n";
             resultOutput += $"[Benchmark running time in seconds: {stopwatch.Elapsed.TotalSeconds} Seconds]\n";
             benchmarkResultOutput.Output(resultOutput);
 
             _defaultOutput.Output("Finish benchmark.\n");
+        }
+
+        /// <summary>
+        /// Method which return the optimized algorithm for the current board.
+        /// </summary>
+        /// <param name="board"></param>
+        private static ISudokuSolver GetOptimizedAlgorithm(ISudokuBoard board)
+        {
+            int emptyCellsCount = 0;
+            // count the number of empty cells.
+            for (int row = 0; row < board.GetBoardSize(); row++)
+                for (int col = 0; col < board.GetBoardSize(); col++)
+                    if (board[row, col].Val == 0)
+                        emptyCellsCount++;
+            // if backtracking is probably the most efficient algorithm return it.
+            if (emptyCellsCount < MAX_EMPTY_CELLS_FOR_BACKTRACKING)
+                return new BacktrackingSolver(board);
+            // else Dancing Links is probably the most efficient algorithm.
+            return new DancingLinksSolver(board);
         }
     }
 }

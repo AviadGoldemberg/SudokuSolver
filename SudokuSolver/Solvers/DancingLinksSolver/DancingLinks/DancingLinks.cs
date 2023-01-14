@@ -11,30 +11,36 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
 {
     /// <summary>
     /// Implemntation of Dancing Links algorithm.
+    /// The algorithm support find number of solution to the problem.
     /// </summary>
     internal class DancingLinks
     {
         private DancingLinksColumnNode _head;
         private Stack<DancingLinksNode> _solutions;
         private List<Stack<DancingLinksNode>> _allSolutions;
-        private int _solutionCount;
-        private object _lock = new object();
+        private readonly int _solutionCount;
 
-        public DancingLinks(BitArray[] matrix, int solutionCount)
+        /// <summary>
+        /// Constructor to Dancing Links algorithm.
+        /// </summary>
+        /// <param name="matrix">Sparse matrix which represent exact cover problem.</param>
+        /// <param name="solutionCount">Number of solution to get.</param>
+        public DancingLinks(SparseMatrix matrix, int solutionCount)
         {
             _solutionCount = solutionCount;
             _solutions = new Stack<DancingLinksNode>();
             _allSolutions = new List<Stack<DancingLinksNode>>();
+            // Create the Dancing Links matrix.
             initDLX(matrix);
         }
+
         /// <summary>
         /// Method which solve the exact cover problem using Dancing Links algorithm.
-        /// The method check only for one solution.
         /// </summary>
         /// <returns>If the problem solved or not.</returns>
         public DancingLinksResult Solve()
         {
-            bool isSolved = Search(0);
+            bool isSolved = Search();
             return new DancingLinksResult(_allSolutions, isSolved);
         }
 
@@ -42,55 +48,55 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
         /// Recursive function that searches for N solutions to the exact cover problem.
         /// N is amount of solutions that was passed in Dancing Links Constructor.
         /// </summary>
-        /// <param name="k">The current depth of the search.</param>
         /// <returns>True if a solution is found, false otherwise.</returns>
-        private bool Search(int k)
+        private bool Search()
         {
             // if solution is found
             if (_head.Right == _head)
             {
                 // add the solution to list of solutions
                 _allSolutions.Add(new Stack<DancingLinksNode>(_solutions));
-                // if we didn't get the amount of solutions we need, so return false in order to continue
-                // search for more solutions.
+                // if we didn't get the amount of solutions we need, return false to search for more solutions.
                 if (_allSolutions.Count != _solutionCount)
                     return false;
                 // if we get the amount of solutions we need, return true to stop.
                 else
                     return true;
             }
-            // find column with the least amount of values.
+            // find best next column.
             DancingLinksColumnNode column = Choose();
-            // remove column and all rows that contain a value in that column
+            // cover the selected column.
             column.Cover();
             for (DancingLinksNode row = column.Down; row != column; row = row.Down)
             {
                 _solutions.Push(row);
 
-                // remove columns in the row and all rows that contain a value in those columns.
+                // cover nodes in row.
                 for (DancingLinksNode rowNode = row.Right; rowNode != row; rowNode = rowNode.Right)
                 {
                     rowNode.Column.Cover();
                 }
                 // search for a solution. if we found all solutions that need, stop.
-                if (Search(k + 1))
+                if (Search())
                     return true;
 
                 // no solution found. remove last row added to the solution and restore columns in the row.
                 row = _solutions.Pop();
                 column = row.Column;
+                
+                // uncover to nodes that were covered.
                 for (DancingLinksNode rowNode = row.Left; rowNode != row; rowNode = rowNode.Left)
                 {
                     rowNode.Column.Uncover();
                 }
             }
-            // restore selected column and all rows that contain a value in that column.
+            // uncover the column that was selected.
             column.Uncover();
             return false;
         }
 
         /// <summary>
-        /// Choose the column with the minimum size.
+        /// Choose the column with the minimum size, or that have size 1.
         /// </summary>
         /// <returns>Column with the minimum size.</returns>
         private DancingLinksColumnNode Choose()
@@ -102,6 +108,12 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
             // iterate all columns from the right of the head node.
             for (DancingLinksColumnNode column = (DancingLinksColumnNode)_head.Right; column != _head; column = (DancingLinksColumnNode)column.Right)
             {
+                // after benchmark, I found that if the column size is one or zero,
+                // in every case that I check the search method run faster.
+                // if I found column with size 1, I can to return and avoid the loops that not necessary.
+                if (column.Size <= 1)
+                    return column;
+
                 // need to found the column with the minimum size.
                 if (column.Size < min)
                 {
@@ -113,12 +125,12 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
         }
 
         /// <summary>
-        /// Method which create Dancing Links data structure by the matrix which represent the problem.
+        /// Method which create Dancing Links data structure by the SparseMatrix which represent the problem.
         /// </summary>
-        /// <param name="matrix">Matrix which represent the problem to solve.</param>
-        private void initDLX(BitArray[] matrix)
+        /// <param name="matrix">SparseMatrix which represent the problem to solve.</param>
+        private void initDLX(SparseMatrix matrix)
         {
-            int columnsNumber = matrix[0].Length;
+            int columnsNumber = matrix.Length2;
 
             _head = new DancingLinksColumnNode("ROOT");
             Dictionary<int, DancingLinksColumnNode> columnNodes = new Dictionary<int, DancingLinksColumnNode>();
@@ -133,37 +145,24 @@ namespace SudokuSolver.Solvers.DancingLinksSolver.DancingLinks
             // set head to the first node
             _head = _head.Right.Column;
 
-            // using tasks to optimize the runtime.
-            List<Task> tasks = new List<Task>();
-            // searching for 1 in the matrix and create new node for it.
-            foreach (BitArray array in matrix)
+            // get every index in the sparse matrix and connect the nodes.
+            foreach (int row in matrix.GetSparseMatrixRows())
             {
-                tasks.Add(Task.Factory.StartNew(() =>
+                DancingLinksNode prevNode = null;
+                foreach (int col in matrix.GetSparseMatrixColumn(row))
                 {
-                    DancingLinksNode prevNode = null;
-                    for (int col = 0; col < matrix[0].Length; col++)
-                    {
-                        if (array[col])
-                        {
-                            DancingLinksColumnNode column = columnNodes[col];
-                            DancingLinksNode newNode = new DancingLinksNode(column);
-                            lock (_lock)
-                            {
-                                if (prevNode == null)
-                                {
-                                    prevNode = newNode;
-                                }
-                                column.Up.LinkDown(newNode);
-                                prevNode = prevNode.LinkRight(newNode);
-                                column.Size++;
-                            }
-                        }
-                    }
-                }));
-            }
-            // wait for all tasks.
-            Task.WaitAll(tasks.ToArray());
 
+                    DancingLinksColumnNode column = columnNodes[col];
+                    DancingLinksNode newNode = new DancingLinksNode(column);
+                    if (prevNode == null)
+                    {
+                        prevNode = newNode;
+                    }
+                    column.Up.LinkDown(newNode);
+                    prevNode = prevNode.LinkRight(newNode);
+                    column.Size++;
+                }
+            }
             _head.Size = columnsNumber;
         }
     }

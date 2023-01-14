@@ -15,6 +15,7 @@ namespace SudokuSolver.Board
         public int Colunm { get; set; }
         public int Val { get; set; }
         public bool IsConst { get; }
+        public HashSet<int> PossibleValues { get; set; }
 
         public Cell(int row, int colunm, int val, bool isConst)
         {
@@ -22,6 +23,7 @@ namespace SudokuSolver.Board
             Colunm = colunm;
             Val = val;
             IsConst = isConst;
+            PossibleValues = new HashSet<int>();
         }
     }
 

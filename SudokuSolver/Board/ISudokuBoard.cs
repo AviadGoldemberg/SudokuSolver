@@ -13,6 +13,7 @@ namespace SudokuSolver.Board
         string GetBoardString();
         bool IsSolved();
         string BoardOutput();
+        bool IsValid(int num, int checkRow, int checkCol);
     }
 
 }
