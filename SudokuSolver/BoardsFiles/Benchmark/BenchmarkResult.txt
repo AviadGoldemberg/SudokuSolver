@@ -1,9 +1,9 @@
-Result for 14/01/2023 6:40Benchmark
+Result for 14/01/2023 6:59Benchmark
 Solve 3000 different boards.
 Number of boards benchmarked: 3000
 [Average solving time: 0ms]
 [Minimum solving time: 0ms]
 [Maximum solving time: 3ms]
 [Unsolved boards: 0ms]
-[Benchmark running time in milliseconds: 595 ms]
-[Benchmark running time in seconds: 0.5952766 Seconds]
+[Benchmark running time in milliseconds: 608 ms]
+[Benchmark running time in seconds: 0.6087771 Seconds]
