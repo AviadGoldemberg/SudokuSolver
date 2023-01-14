@@ -300,6 +300,7 @@ namespace SudokuSolver.Menu
             // result parametrs:
             ulong averageTime = 0;
             ulong count = 0;
+            int unsolvedBoards = 0;
             // init min and max solve time.
             long minSolveTime = long.MaxValue;
             long maxSolveTime = long.MinValue;
@@ -322,6 +323,10 @@ namespace SudokuSolver.Menu
                 averageTime += (ulong)solvingResult.SolvingTime;
                 count++;
 
+                // if there is unsolved board which is should not happend, update counter.
+                if (!solvingResult.IsSolved)
+                    unsolvedBoards++;
+
                 // update minimum and maximum solving time.
                 if (solvingResult.SolvingTime < minSolveTime)
                     minSolveTime = solvingResult.SolvingTime;
@@ -343,6 +348,7 @@ namespace SudokuSolver.Menu
             resultOutput += $"[Average solving time: {averageTime / count}ms]\n";
             resultOutput += $"[Minimum solving time: {minSolveTime}ms]\n";
             resultOutput += $"[Maximum solving time: {maxSolveTime}ms]\n";
+            resultOutput += $"[Unsolved boards: {unsolvedBoards}ms]\n";
             resultOutput += $"[Benchmark running time in milliseconds: {stopwatch.ElapsedMilliseconds} ms]\n";
             resultOutput += $"[Benchmark running time in seconds: {stopwatch.Elapsed.TotalSeconds} Seconds]\n";
             benchmarkResultOutput.Output(resultOutput);
