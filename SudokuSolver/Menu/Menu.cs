@@ -27,6 +27,8 @@ namespace SudokuSolver.Menu
         private const string BENCHMARK_FILE_PATH = "Benchmark\\boardsDataset.txt";
         private const string BENCHMARK_LOG_FILE_PATH = "Benchmark\\BenchmarkLogs.txt";
         private const string BENCHMARK_RESULT_FILE_PATH = "Benchmark\\BenchmarkResult.txt";
+        private const string SOLVED_BOARD_RESULT_FILE = FILES_DIRECTORY + "\\Result.txt";
+        private bool _saveResultToFile;
         private const int MAX_EMPTY_CELLS_FOR_BACKTRACKING = 15;
         private OutputBoardFormat _outputBoardFormat = OutputBoardFormat.BoardString;
         
@@ -36,6 +38,8 @@ namespace SudokuSolver.Menu
         /// </summary>
         private enum Choices
         {
+            SaveResultInFile = 1,
+
             ConsoleInput = 1,
             FileInput = 2,
 
@@ -64,6 +68,19 @@ namespace SudokuSolver.Menu
             // init default input and output handlers. 
             _defaultInput = new ConsoleInput();
             _defaultOutput = new ConsoleOutput();
+        }
+
+        /// <summary>
+        /// Method which check with the user if he want to save the result in file.
+        /// </summary>
+        /// <returns>True if need to save the result in file, else false.</returns>
+        private bool SaveResultToFileChecker()
+        {
+            int userChoice = GetUserIntChoice($"Enter {(int)Choices.SaveResultInFile} if you want to save the solved board result in: {SOLVED_BOARD_RESULT_FILE}\nPress any other number to show result only at console.\nEnter here your choice: ");
+            if (userChoice == (int)Choices.SaveResultInFile)
+                return true;
+            return false;
+
         }
 
         /// <summary>
@@ -96,6 +113,7 @@ namespace SudokuSolver.Menu
             bool continueLoop = true;
             OutputWelcomeMessage();
             InitOutputFormat();
+            _saveResultToFile = SaveResultToFileChecker();
             while (continueLoop)
             {
                 // getting choice from input.
@@ -275,6 +293,13 @@ namespace SudokuSolver.Menu
                 _defaultOutput.Output($"Solved in [{solvingResult.SolvingTime}ms]\n{boardInSelectedFormat}\n");
             else
                 throw new InvalidBoardString($"The board is unsolvable. Time took: [{solvingResult.SolvingTime}ms]");
+            
+            // save to file if there is need to
+            if (_saveResultToFile)
+            {
+                IOutput fileOutput = new FileOutput(Path.Combine(GetRootDirectory(), SOLVED_BOARD_RESULT_FILE));
+                fileOutput.Output(board.GetBoardString());
+            }
         }
 
         /// <summary>
